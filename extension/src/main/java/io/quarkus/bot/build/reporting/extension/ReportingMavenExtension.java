@@ -68,7 +68,7 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
             }
         }
 
-        Path targetDirectory = topLevelProjectPath.resolve("target");
+        Path targetDirectory = Path.of("target");
         try {
             Files.createDirectories(targetDirectory);
         } catch (Exception e) {
