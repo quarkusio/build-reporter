@@ -41,6 +41,18 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <tagNameFormat>@{project.version}</tagNameFormat>
+                    <pushChanges>true</pushChanges>
+                    <localCheckout>true</localCheckout>
+                </configuration>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
