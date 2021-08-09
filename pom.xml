@@ -57,4 +57,39 @@
         <module>model</module>
         <module>extension</module>
     </modules>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>Luke1432</id>
+            <name>Lukas Fenkam</name>
+            <email>lukas@fenkam.name</email>
+        </developer>
+        <developer>
+            <id>gsmet</id>
+            <name>Guillaume Smet</name>
+            <email>guillaume.smet@gmail.com</email>
+            <organization>Red Hat</organization>
+            <organizationUrl>http://www.redhat.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/quarkusio/build-report-maven-extension</url>
+        <connection>scm:git:git@github.com:quarkusio/build-report-maven-extension.git</connection>
+        <developerConnection>scm:git:git@github.com:quarkusio/build-report-maven-extension.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/quarkusio/build-report-maven-extension/issues</url>
+    </issueManagement>
 </project>
