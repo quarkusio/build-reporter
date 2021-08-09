@@ -3,7 +3,7 @@
     <parent>
         <groupId>io.quarkus.bot</groupId>
         <artifactId>build-reporting-maven-extension-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
     <artifactId>build-reporting-maven-extension-model</artifactId>
     <name>Build Reporting Maven Extension - Model</name>
