@@ -24,6 +24,12 @@ public class ProjectReport {
         return new ProjectReport(name, BuildStatus.SKIPPED, basedir, null, groupId, artifactId);
     }
 
+    /**
+     * For Jackson deserialization.
+     */
+    public ProjectReport() {
+    }
+
     private ProjectReport(String name, BuildStatus status, Path basedir, String error,
             String groupId, String artifactId) {
         this.name = name;
