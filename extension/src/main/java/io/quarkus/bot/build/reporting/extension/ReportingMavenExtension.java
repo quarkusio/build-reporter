@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
@@ -58,8 +57,7 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
             } else if (buildSummary instanceof BuildFailure) {
                 buildReport.addProjectReport(
                         ProjectReport.failure(project.getName(), projectPath,
-                                result.getExceptions().stream().map(t -> REMOVE_COLORS.matcher(t.getMessage()).replaceAll(""))
-                                        .collect(Collectors.toList()),
+                                REMOVE_COLORS.matcher(((BuildFailure) buildSummary).getCause().getMessage()).replaceAll(""),
                                 project.getGroupId(), project.getArtifactId()));
             } else if (buildSummary instanceof BuildSuccess) {
                 buildReport.addProjectReport(
