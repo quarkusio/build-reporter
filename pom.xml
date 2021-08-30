@@ -8,7 +8,7 @@
     <groupId>io.quarkus.bot</groupId>
     <artifactId>build-reporting-maven-extension-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
     <name>Build Reporting Maven Extension - Parent</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -95,7 +95,7 @@
         <url>https://github.com/quarkusio/build-report-maven-extension</url>
         <connection>scm:git:git@github.com:quarkusio/build-report-maven-extension.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/build-report-maven-extension.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>1.0.4</tag>
     </scm>
 
     <issueManagement>
