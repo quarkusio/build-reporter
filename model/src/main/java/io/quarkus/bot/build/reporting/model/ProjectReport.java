@@ -34,7 +34,7 @@ public class ProjectReport {
             String groupId, String artifactId) {
         this.name = name;
         this.status = status;
-        this.basedir = basedir.toString();
+        this.basedir = basedir.toString().replace('\\', '/');
         this.error = error;
         this.artifactId = artifactId;
         this.groupId = groupId;
