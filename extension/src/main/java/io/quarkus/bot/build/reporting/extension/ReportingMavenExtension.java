@@ -44,11 +44,11 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
 
         BuildReport buildReport = new BuildReport();
 
-        Path topLevelProjectPath = result.getProject().getBasedir().toPath();
+        Path rootPath = Path.of("").toAbsolutePath();
 
         for (MavenProject project : projects) {
             BuildSummary buildSummary = result.getBuildSummary(project);
-            Path projectPath = topLevelProjectPath.relativize(project.getBasedir().toPath());
+            Path projectPath = rootPath.relativize(project.getBasedir().toPath());
 
             if (buildSummary == null) {
                 buildReport.addProjectReport(
