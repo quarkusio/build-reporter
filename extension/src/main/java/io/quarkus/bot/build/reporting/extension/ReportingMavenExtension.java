@@ -55,9 +55,13 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
                         ProjectReport.skipped(project.getName(), projectPath, project.getGroupId(),
                                 project.getArtifactId()));
             } else if (buildSummary instanceof BuildFailure) {
+                String msg = ((BuildFailure) buildSummary).getCause().getMessage();
+                if (msg == null) {
+                    msg = "";
+                }
                 buildReport.addProjectReport(
                         ProjectReport.failure(project.getName(), projectPath,
-                                REMOVE_COLORS.matcher(((BuildFailure) buildSummary).getCause().getMessage()).replaceAll(""),
+                                REMOVE_COLORS.matcher(msg).replaceAll(""),
                                 project.getGroupId(), project.getArtifactId()));
             } else if (buildSummary instanceof BuildSuccess) {
                 buildReport.addProjectReport(
