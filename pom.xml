@@ -17,7 +17,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
 
-        <maven-core.version>3.8.1</maven-core.version>
+        <maven-core.version>3.8.3</maven-core.version>
         <plexus-containers.version>2.1.0</plexus-containers.version>
         <jackson-databind.version>2.12.5</jackson-databind.version>
     </properties>
