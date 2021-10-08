@@ -31,6 +31,7 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
 
     private static final String BUILD_REPORT_JSON_FILENAME = "build-report.json";
     private static final Pattern REMOVE_COLORS = Pattern.compile("\u001B\\[[;\\d]*m");
+    private static final String UNKNOWN_CAUSE = "unknown cause";
 
     @Requirement
     private Logger logger;
@@ -83,7 +84,7 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
 
     private static String getErrorMessage(BuildFailure buildFailure) {
         if (buildFailure.getCause() == null || buildFailure.getCause().getMessage() == null) {
-            return "";
+            return UNKNOWN_CAUSE;
         }
 
         return REMOVE_COLORS.matcher(buildFailure.getCause().getMessage()).replaceAll("");
