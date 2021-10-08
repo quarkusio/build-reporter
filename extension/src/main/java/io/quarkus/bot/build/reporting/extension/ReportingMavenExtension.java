@@ -37,8 +37,7 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
     private Logger logger;
 
     @Override
-    public void afterSessionEnd(MavenSession session)
-            throws MavenExecutionException {
+    public void afterSessionEnd(MavenSession session) {
 
         MavenExecutionResult result = session.getResult();
         List<MavenProject> projects = result.getTopologicallySortedProjects();
