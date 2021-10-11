@@ -57,7 +57,7 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
             } else if (buildSummary instanceof BuildFailure) {
                 buildReport.addProjectReport(
                         ProjectReport.failure(project.getName(), projectPath,
-                                REMOVE_COLORS.matcher(((BuildFailure) buildSummary).getCause().getMessage()).replaceAll(""),
+                                getErrorMessage((BuildFailure) buildSummary),
                                 project.getGroupId(), project.getArtifactId()));
             } else if (buildSummary instanceof BuildSuccess) {
                 buildReport.addProjectReport(
@@ -79,5 +79,13 @@ public class ReportingMavenExtension extends AbstractMavenLifecycleParticipant {
         } catch (Exception e) {
             logger.error("Unable to create the " + BUILD_REPORT_JSON_FILENAME + " file", e);
         }
+    }
+
+    private static String getErrorMessage(BuildFailure buildFailure) {
+        if (buildFailure.getCause() == null || buildFailure.getCause().getMessage() == null) {
+            return "";
+        }
+
+        return REMOVE_COLORS.matcher(buildFailure.getCause().getMessage()).replaceAll("");
     }
 }
