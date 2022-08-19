@@ -1,7 +1,10 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
+import java.io.IOException;
+
 import org.kohsuke.github.GHIssue;
 import org.kohsuke.github.GHPullRequest;
+import org.kohsuke.github.GHWorkflowRun;
 
 public class WorkflowContext {
 
@@ -22,6 +25,21 @@ public class WorkflowContext {
         this.type = "Pull request";
         this.logContext = this.type + " #" + pullRequest.getNumber();
         this.htmlUrl = pullRequest.getHtmlUrl().toString();
+    }
+
+    public WorkflowContext(GHWorkflowRun workflowRun) {
+        this.repository = workflowRun.getRepository().getFullName();
+        this.type = "GitHub Actions";
+        this.logContext = this.type + " #" + workflowRun.getId();
+
+        // this is ugly, we need to fix it in the GitHub API
+        String htmlUrl;
+        try {
+            htmlUrl = workflowRun.getHtmlUrl().toString();
+        } catch (IOException e) {
+            htmlUrl = null;
+        }
+        this.htmlUrl = htmlUrl;
     }
 
     public String getRepository() {

@@ -11,12 +11,14 @@ public class BuildReporterConfig {
     private final boolean dryRun;
     private final Comparator<GHWorkflowJob> workflowJobComparator;
     private final Set<String> monitoredWorkflows;
+    private final boolean createCheckRun;
 
     private BuildReporterConfig(boolean dryRun, Comparator<GHWorkflowJob> workflowJobComparator,
-            Set<String> monitoredWorkflows) {
+            Set<String> monitoredWorkflows, boolean createCheckRun) {
         this.dryRun = dryRun;
         this.workflowJobComparator = workflowJobComparator;
         this.monitoredWorkflows = monitoredWorkflows;
+        this.createCheckRun = createCheckRun;
     }
 
     public boolean isDryRun() {
@@ -31,6 +33,10 @@ public class BuildReporterConfig {
         return monitoredWorkflows;
     }
 
+    public boolean isCreateCheckRun() {
+        return createCheckRun;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -38,6 +44,7 @@ public class BuildReporterConfig {
     public static class Builder {
 
         private boolean dryRun = false;
+        private boolean createCheckRun = true;
         private Comparator<GHWorkflowJob> workflowJobComparator = DefaultJobNameComparator.INSTANCE;
         private Set<String> monitoredWorkflows = Collections.emptySet();
 
@@ -56,8 +63,13 @@ public class BuildReporterConfig {
             return this;
         }
 
+        public Builder createCheckRun(boolean createCheckRun) {
+            this.createCheckRun = createCheckRun;
+            return this;
+        }
+
         public BuildReporterConfig build() {
-            return new BuildReporterConfig(dryRun, workflowJobComparator, monitoredWorkflows);
+            return new BuildReporterConfig(dryRun, workflowJobComparator, monitoredWorkflows, createCheckRun);
         }
     }
 

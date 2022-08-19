@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -27,10 +25,6 @@ import io.quarkus.bot.buildreporter.githubactions.urlshortener.UrlShortener;
 class BuildReportsUnarchiver {
 
     private static final Logger LOG = Logger.getLogger(BuildReportsUnarchiver.class);
-
-    private static final Path MAVEN_SUREFIRE_REPORTS_PATH = Path.of("target", "surefire-reports");
-    private static final Path MAVEN_FAILSAFE_REPORTS_PATH = Path.of("target", "failsafe-reports");
-    private static final Path GRADLE_REPORTS_PATH = Path.of("build", "test-results", "test");
 
     @Inject
     UrlShortener urlShortener;
@@ -54,104 +48,6 @@ class BuildReportsUnarchiver {
         }
 
         return artifactIsDownloaded.getBuildReports();
-    }
-
-    static class BuildReports {
-
-        private final Path buildReportPath;
-        private final Set<TestResultsPath> testResultsPaths;
-
-        BuildReports(Path buildReportPath, Set<TestResultsPath> testResultsPaths) {
-            this.buildReportPath = buildReportPath;
-            this.testResultsPaths = testResultsPaths;
-        }
-
-        public Path getBuildReportPath() {
-            return buildReportPath;
-        }
-
-        public Set<TestResultsPath> getTestResultsPaths() {
-            return testResultsPaths;
-        }
-    }
-
-    interface TestResultsPath extends Comparable<TestResultsPath> {
-
-        Path getPath();
-
-        String getModuleName(Path jobDirectory);
-    }
-
-    private static class SurefireTestResultsPath implements TestResultsPath {
-
-        private final Path path;
-
-        private SurefireTestResultsPath(Path path) {
-            this.path = path;
-        }
-
-        @Override
-        public Path getPath() {
-            return path;
-        }
-
-        @Override
-        public String getModuleName(Path jobDirectory) {
-            return jobDirectory.relativize(path).getParent().getParent().toString();
-        }
-
-        @Override
-        public int compareTo(TestResultsPath o) {
-            return path.compareTo(o.getPath());
-        }
-    }
-
-    static class FailsafeTestResultsPath implements TestResultsPath {
-
-        private final Path path;
-
-        private FailsafeTestResultsPath(Path path) {
-            this.path = path;
-        }
-
-        @Override
-        public Path getPath() {
-            return path;
-        }
-
-        @Override
-        public String getModuleName(Path jobDirectory) {
-            return jobDirectory.relativize(path).getParent().getParent().toString();
-        }
-
-        @Override
-        public int compareTo(TestResultsPath o) {
-            return path.compareTo(o.getPath());
-        }
-    }
-
-    static class GradleTestResultsPath implements TestResultsPath {
-
-        private final Path path;
-
-        private GradleTestResultsPath(Path path) {
-            this.path = path;
-        }
-
-        @Override
-        public Path getPath() {
-            return path;
-        }
-
-        @Override
-        public String getModuleName(Path jobDirectory) {
-            return jobDirectory.relativize(path).getParent().getParent().getParent().toString();
-        }
-
-        @Override
-        public int compareTo(TestResultsPath o) {
-            return path.compareTo(o.getPath());
-        }
     }
 
     private static class ArtifactIsDownloaded implements Callable<Boolean> {
@@ -190,25 +86,18 @@ class BuildReportsUnarchiver {
             return Optional.ofNullable(buildReports);
         }
 
-        private BuildReports unzip(InputStream inputStream, Path destinationDirectory) throws IOException {
-            Path buildReportPath = null;
-            Set<TestResultsPath> testResultsPaths = new TreeSet<>();
+        private BuildReports unzip(InputStream inputStream, Path jobDirectory) throws IOException {
+            BuildReports.Builder buildReportsBuilder = new BuildReports.Builder(jobDirectory);
 
             try (final ZipInputStream zis = new ZipInputStream(inputStream)) {
                 final byte[] buffer = new byte[1024];
                 ZipEntry zipEntry = zis.getNextEntry();
                 while (zipEntry != null) {
-                    final Path newPath = getZipEntryPath(destinationDirectory, zipEntry);
+                    final Path newPath = getZipEntryPath(jobDirectory, zipEntry);
                     final File newFile = newPath.toFile();
-                    if (newPath.endsWith(WorkflowConstants.BUILD_REPORT_PATH)) {
-                        buildReportPath = newPath;
-                    } else if (newPath.endsWith(MAVEN_SUREFIRE_REPORTS_PATH)) {
-                        testResultsPaths.add(new SurefireTestResultsPath(newPath));
-                    } else if (newPath.endsWith(MAVEN_FAILSAFE_REPORTS_PATH)) {
-                        testResultsPaths.add(new FailsafeTestResultsPath(newPath));
-                    } else if (newPath.endsWith(GRADLE_REPORTS_PATH)) {
-                        testResultsPaths.add(new GradleTestResultsPath(newPath));
-                    }
+
+                    buildReportsBuilder.addPath(newPath);
+
                     if (zipEntry.isDirectory()) {
                         if (!newFile.isDirectory() && !newFile.mkdirs()) {
                             throw new IOException("Failed to create directory " + newFile);
@@ -231,7 +120,7 @@ class BuildReportsUnarchiver {
                 zis.closeEntry();
             }
 
-            return new BuildReports(buildReportPath, testResultsPaths);
+            return buildReportsBuilder.build();
         }
 
         private static Path getZipEntryPath(Path destinationDirectory, ZipEntry zipEntry) throws IOException {
