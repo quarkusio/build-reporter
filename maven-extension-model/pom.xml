@@ -2,9 +2,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.quarkus.bot</groupId>
-        <artifactId>build-reporting-maven-extension-parent</artifactId>
+        <artifactId>build-reporter-parent</artifactId>
         <version>1.0.6-SNAPSHOT</version>
     </parent>
-    <artifactId>build-reporting-maven-extension-model</artifactId>
-    <name>Build Reporting Maven Extension - Model</name>
+    <artifactId>build-reporter-maven-extension-model</artifactId>
+    <name>Build Reporter - Maven Extension - Model</name>
 </project>

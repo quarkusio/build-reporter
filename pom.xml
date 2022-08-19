@@ -6,10 +6,10 @@
         <version>9</version>
     </parent>
     <groupId>io.quarkus.bot</groupId>
-    <artifactId>build-reporting-maven-extension-parent</artifactId>
+    <artifactId>build-reporter-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.0.6-SNAPSHOT</version>
-    <name>Build Reporting Maven Extension - Parent</name>
+    <name>Build Reporter - Parent</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -64,8 +64,8 @@
         </pluginManagement>
     </build>
     <modules>
-        <module>model</module>
-        <module>extension</module>
+        <module>maven-extension-model</module>
+        <module>maven-extension</module>
     </modules>
 
     <licenses>
@@ -92,14 +92,14 @@
     </developers>
 
     <scm>
-        <url>https://github.com/quarkusio/build-report-maven-extension</url>
-        <connection>scm:git:git@github.com:quarkusio/build-report-maven-extension.git</connection>
-        <developerConnection>scm:git:git@github.com:quarkusio/build-report-maven-extension.git</developerConnection>
+        <url>https://github.com/quarkusio/build-reporter</url>
+        <connection>scm:git:git@github.com:quarkusio/build-reporter.git</connection>
+        <developerConnection>scm:git:git@github.com:quarkusio/build-reporter.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/quarkusio/build-report-maven-extension/issues</url>
+        <url>https://github.com/quarkusio/build-reporter/issues</url>
     </issueManagement>
 </project>
