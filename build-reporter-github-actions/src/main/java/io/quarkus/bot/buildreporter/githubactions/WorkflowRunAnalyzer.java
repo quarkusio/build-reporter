@@ -1,12 +1,9 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,7 +23,6 @@ import org.apache.maven.plugins.surefire.report.ReportTestCase;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 import org.jboss.logging.Logger;
-import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHWorkflowJob;
 import org.kohsuke.github.GHWorkflowJob.Step;
@@ -37,8 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkus.bot.build.reporting.model.BuildReport;
 import io.quarkus.bot.build.reporting.model.ProjectReport;
-import io.quarkus.bot.buildreporter.githubactions.BuildReportsUnarchiver.BuildReports;
-import io.quarkus.bot.buildreporter.githubactions.BuildReportsUnarchiver.TestResultsPath;
+import io.quarkus.bot.buildreporter.githubactions.BuildReports.TestResultsPath;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReport;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportJob;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportModule;
@@ -69,7 +64,7 @@ public class WorkflowRunAnalyzer {
     public Optional<WorkflowReport> getReport(GHWorkflowRun workflowRun,
             WorkflowContext workflowContext,
             List<GHWorkflowJob> jobs,
-            List<GHArtifact> buildReportsArtifacts) throws IOException {
+            Map<String, Optional<BuildReports>> buildReportsMap) throws IOException {
         if (jobs.isEmpty()) {
             LOG.error(workflowContext.getLogContext() + " - No jobs found");
             return Optional.empty();
@@ -77,84 +72,61 @@ public class WorkflowRunAnalyzer {
 
         GHRepository workflowRunRepository = workflowRun.getRepository();
         String sha = workflowRun.getHeadSha();
-        Path allBuildReportsDirectory = Files.createTempDirectory("build-reports-analyzer-");
 
-        try {
-            List<WorkflowReportJob> workflowReportJobs = new ArrayList<>();
+        List<WorkflowReportJob> workflowReportJobs = new ArrayList<>();
 
-            for (GHWorkflowJob job : jobs) {
-                if (job.getConclusion() != Conclusion.FAILURE && job.getConclusion() != Conclusion.CANCELLED) {
-                    workflowReportJobs.add(new WorkflowReportJob(job.getName(), workflowJobLabeller.label(job.getName()),
-                            null, job.getConclusion(), null, null, null,
-                            EMPTY_BUILD_REPORT, Collections.emptyList(), false));
-                    continue;
-                }
+        for (GHWorkflowJob job : jobs) {
+            if (job.getConclusion() != Conclusion.FAILURE && job.getConclusion() != Conclusion.CANCELLED) {
+                workflowReportJobs.add(new WorkflowReportJob(job.getName(), workflowJobLabeller.label(job.getName()),
+                        null, job.getConclusion(), null, null, null,
+                        EMPTY_BUILD_REPORT, Collections.emptyList(), false));
+                continue;
+            }
 
-                Optional<GHArtifact> buildReportsArtifactOptional = buildReportsArtifacts.stream()
-                        .filter(a -> a.getName().replace(WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX, "")
-                                .equals(job.getName()))
-                        .findFirst();
+            Optional<BuildReports> buildReportsOptional = buildReportsMap.get(job.getName());
 
-                BuildReport buildReport = EMPTY_BUILD_REPORT;
-                List<WorkflowReportModule> modules = Collections.emptyList();
-                boolean errorDownloadingBuildReports = false;
-                if (buildReportsArtifactOptional.isPresent()) {
-                    GHArtifact buildReportsArtifact = buildReportsArtifactOptional.get();
-                    Path jobDirectory = allBuildReportsDirectory.resolve(buildReportsArtifact.getName());
-
-                    Optional<BuildReports> buildReportsOptional = buildReportsUnarchiver.getBuildReports(workflowContext,
-                            buildReportsArtifact, jobDirectory);
-
-                    if (buildReportsOptional.isPresent()) {
-                        BuildReports buildReports = buildReportsOptional.get();
-                        if (buildReports.getBuildReportPath() != null) {
-                            buildReport = getBuildReport(workflowContext, buildReports.getBuildReportPath());
-                        }
-
-                        modules = buildReportsArtifactOptional.isPresent()
-                                ? getModules(workflowContext, buildReport, jobDirectory, buildReports.getTestResultsPaths(),
-                                        sha)
-                                : Collections.emptyList();
-                    } else {
-                        errorDownloadingBuildReports = true;
-                        LOG.error(workflowContext.getLogContext() + " - Unable to analyze build report for artifact "
-                                + buildReportsArtifact.getName() + " - see exceptions above");
+            BuildReport buildReport = EMPTY_BUILD_REPORT;
+            List<WorkflowReportModule> modules = Collections.emptyList();
+            boolean errorDownloadingBuildReports = false;
+            if (buildReportsOptional != null) {
+                if (buildReportsOptional.isPresent()) {
+                    BuildReports buildReports = buildReportsOptional.get();
+                    if (buildReports.getBuildReportPath() != null) {
+                        buildReport = getBuildReport(workflowContext, buildReports.getBuildReportPath());
                     }
+
+                    modules = getModules(workflowContext, buildReport, buildReports.getJobDirectory(),
+                            buildReports.getTestResultsPaths(),
+                            sha);
+                } else {
+                    errorDownloadingBuildReports = true;
+                    LOG.error(workflowContext.getLogContext() + " - Unable to analyze build report for job "
+                            + job.getName() + " - see exceptions above");
                 }
-
-                workflowReportJobs.add(new WorkflowReportJob(job.getName(),
-                        workflowJobLabeller.label(job.getName()),
-                        getFailuresAnchor(job.getId()),
-                        job.getConclusion(),
-                        getFailingStep(job.getSteps()),
-                        getJobUrl(job),
-                        getRawLogsUrl(job, workflowRun.getHeadSha()),
-                        buildReport,
-                        modules,
-                        errorDownloadingBuildReports));
             }
 
-            if (workflowReportJobs.isEmpty()) {
-                LOG.warn(workflowContext.getLogContext() + " - Report jobs empty");
-                return Optional.empty();
-            }
-
-            WorkflowReport report = new WorkflowReport(sha, workflowReportJobs,
-                    workflowRunRepository.getFullName().equals(workflowContext.getRepository()),
-                    workflowRun.getConclusion(), workflowRun.getHtmlUrl().toString());
-
-            return Optional.of(report);
-        } finally {
-            try {
-                Files.walk(allBuildReportsDirectory)
-                        .sorted(Comparator.reverseOrder())
-                        .map(Path::toFile)
-                        .forEach(File::delete);
-            } catch (IOException e) {
-                LOG.error(workflowContext.getLogContext() + " - Unable to delete temp directory "
-                        + allBuildReportsDirectory);
-            }
+            workflowReportJobs.add(new WorkflowReportJob(job.getName(),
+                    workflowJobLabeller.label(job.getName()),
+                    getFailuresAnchor(job.getId()),
+                    job.getConclusion(),
+                    getFailingStep(job.getSteps()),
+                    getJobUrl(job),
+                    getRawLogsUrl(job, workflowRun.getHeadSha()),
+                    buildReport,
+                    modules,
+                    errorDownloadingBuildReports));
         }
+
+        if (workflowReportJobs.isEmpty()) {
+            LOG.warn(workflowContext.getLogContext() + " - Report jobs empty");
+            return Optional.empty();
+        }
+
+        WorkflowReport report = new WorkflowReport(sha, workflowReportJobs,
+                workflowRunRepository.getFullName().equals(workflowContext.getRepository()),
+                workflowRun.getConclusion(), workflowRun.getHtmlUrl().toString());
+
+        return Optional.of(report);
     }
 
     private static BuildReport getBuildReport(WorkflowContext workflowContext, Path buildReportPath) {
