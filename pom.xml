@@ -14,12 +14,17 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
 
         <maven-core.version>3.8.6</maven-core.version>
         <plexus-containers.version>2.1.1</plexus-containers.version>
         <jackson-databind.version>2.13.3</jackson-databind.version>
+
+        <quarkus.version>2.11.2.Final</quarkus.version>
+        <quarkus-github-app.version>1.11.0</quarkus-github-app.version>
+        <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
+        <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -37,6 +42,16 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson-databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkiverse.githubapp</groupId>
+                <artifactId>quarkus-github-app-events</artifactId>
+                <version>${quarkus-github-app.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.surefire</groupId>
+                <artifactId>surefire-report-parser</artifactId>
+                <version>${surefire-plugin.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -60,12 +75,26 @@
                     <artifactId>plexus-component-metadata</artifactId>
                     <version>${plexus-containers.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.jboss.jandex</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${jandex-maven-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>make-index</id>
+                            <goals>
+                                <goal>jandex</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
     <modules>
         <module>maven-extension-model</module>
         <module>maven-extension</module>
+        <module>build-reporter-github-actions</module>
     </modules>
 
     <licenses>

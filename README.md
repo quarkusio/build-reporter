@@ -33,13 +33,54 @@ Adding the extension is easy:
             <extension>
                 <groupId>io.quarkus.bot</groupId>
                 <artifactId>build-reporter-maven-extension</artifactId>
-                <version>VERSION</version>
+                <version>${build-reporter.version}</version>
             </extension>
         </extensions>
     </build>
 
     <!-- ... -->
 ```
+
+## Including the build reporter in a GitHub App
+
+First, add the dependency below to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>io.quarkus.bot</groupId>
+    <artifactId>build-reporter-github-actions</artifactId>
+    <version>${build-reporter.version}</version>
+</dependency>
+```
+
+Then you need to listen on the appropriate events and call the build reporter:
+
+```java
+public class AnalyzeWorkflowRunResults {
+
+    @Inject
+    BuildReporterEventHandler buildReporterEventHandler;
+
+    @Inject
+    QuarkusGitHubBotConfig quarkusBotConfig;
+
+    void analyzeWorkflowResults(@WorkflowRun.Completed @WorkflowRun.Requested GHEventPayload.WorkflowRun workflowRunPayload,
+            @ConfigFile("quarkus-github-bot.yml") QuarkusGitHubBotConfigFile quarkusBotConfigFile,
+            GitHub gitHub, DynamicGraphQLClient gitHubGraphQLClient) throws IOException {
+        BuildReporterConfig buildReporterConfig = BuildReporterConfig.builder()
+                .dryRun(quarkusBotConfig.isDryRun())
+                .monitoredWorkflows(quarkusBotConfigFile.workflowRunAnalysis.workflows)
+                .build();
+
+        buildReporterEventHandler.handle(workflowRunPayload, buildReporterConfig, gitHub, gitHubGraphQLClient);
+    }
+}
+```
+
+Note that, in this example, we get the dry run configuration from the GitHub App configuration
+and the monitored workflows from the configuration file hosted in the repository.
+
+It is important to listen to both the `@WorkflowRun.Completed` and the `@WorkflowRun.Requested` events.
 
 ## Releasing
 
