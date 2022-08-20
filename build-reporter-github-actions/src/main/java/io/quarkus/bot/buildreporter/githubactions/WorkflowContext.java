@@ -29,7 +29,7 @@ public class WorkflowContext {
 
     public WorkflowContext(GHWorkflowRun workflowRun) {
         this.repository = workflowRun.getRepository().getFullName();
-        this.type = "GitHub Actions";
+        this.type = "Workflow run summary";
         this.logContext = this.type + " #" + workflowRun.getId();
 
         // this is ugly, we need to fix it in the GitHub API
