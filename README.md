@@ -12,7 +12,7 @@ It is composed of:
 - A Maven extension that collect the build status of each module (optional)
 - The build reporter itself, which can be used in a Quarkus GitHub App-based project
 
-This project is for instance consumed by the [Quarkus GitHub bot](https://github.com/quarkusio/quarkus-github-bot).
+This project is for instance consumed by the [Quarkus GitHub bot](https://github.com/quarkusio/quarkus-github-bot) and the [action-build-reporter](https://github.com/quarkusio/action-build-reporter).
 
 ## Installing the Maven extension
 
