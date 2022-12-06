@@ -46,8 +46,10 @@
 {/for}
 {#else if module.projectReportFailure}
 <p>✖ <code>{module.projectReportFailure}</code></p>
+
 {#else}
 <p>We were unable to extract a useful error message.</p>
+
 {/if}
 {/for}
 {#if job_hasNext}
