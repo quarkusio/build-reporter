@@ -41,6 +41,11 @@ public class BuildReporterEventHandler {
 
     private static final Logger LOG = Logger.getLogger(BuildReporterEventHandler.class);
 
+    public static final String PULL_REQUEST_COMPLETED_SUCCESSFULLY = """
+            :heavy_check_mark: The latest workflow run for the pull request has completed successfully.
+
+            It should be safe to merge provided you have a look at the other checks in the summary.""";
+
     @Inject
     BuildReporter buildReporter;
 
@@ -103,6 +108,8 @@ public class BuildReporterEventHandler {
         Path allBuildReportsDirectory = artifactsAvailable ? Files.createTempDirectory("build-reports-analyzer-") : null;
 
         try {
+            Conclusion conclusion = workflowRun.getConclusion();
+
             if (workflowRun.getEvent() == GHEvent.PULL_REQUEST) {
                 Optional<GHPullRequest> pullRequestOptional = getAssociatedPullRequest(workflowRun, artifacts);
 
@@ -117,7 +124,10 @@ public class BuildReporterEventHandler {
                 hideOutdatedWorkflowRunResults(buildReporterConfig, workflowContext, pullRequest,
                         gitHubGraphQLClient);
 
-                if (workflowRun.getConclusion() != Conclusion.FAILURE) {
+                if (conclusion != Conclusion.FAILURE) {
+                    if (conclusion == Conclusion.SUCCESS) {
+                        pullRequest.comment(PULL_REQUEST_COMPLETED_SUCCESSFULLY + "\n\n" + WorkflowConstants.MESSAGE_ID_ACTIVE);
+                    }
                     return;
                 }
 
@@ -153,7 +163,7 @@ public class BuildReporterEventHandler {
                 hideOutdatedWorkflowRunResults(buildReporterConfig, workflowContext, reportIssue,
                         gitHubGraphQLClient);
 
-                if (workflowRun.getConclusion() == Conclusion.SUCCESS
+                if (conclusion == Conclusion.SUCCESS
                         && reportIssue.getState() == GHIssueState.OPEN) {
                     String fixedComment = ":heavy_check_mark: **Build fixed:**\n* Link to latest CI run: "
                             + workflowRun.getHtmlUrl().toString();
@@ -168,7 +178,7 @@ public class BuildReporterEventHandler {
                     return;
                 }
 
-                if (workflowRun.getConclusion() != Conclusion.FAILURE) {
+                if (conclusion != Conclusion.FAILURE) {
                     return;
                 }
 
