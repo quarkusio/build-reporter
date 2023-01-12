@@ -125,7 +125,7 @@ public class BuildReporterEventHandler {
                         gitHubGraphQLClient);
 
                 if (conclusion != Conclusion.FAILURE) {
-                    if (conclusion == Conclusion.SUCCESS) {
+                    if (!pullRequest.isDraft() && conclusion == Conclusion.SUCCESS) {
                         pullRequest.comment(PULL_REQUEST_COMPLETED_SUCCESSFULLY + "\n\n" + WorkflowConstants.MESSAGE_ID_ACTIVE);
                     }
                     return;
