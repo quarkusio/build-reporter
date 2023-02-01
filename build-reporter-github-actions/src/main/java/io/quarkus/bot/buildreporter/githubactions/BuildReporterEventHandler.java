@@ -22,6 +22,7 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.jboss.logging.Logger;
 import org.kohsuke.github.GHArtifact;
+import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHEvent;
 import org.kohsuke.github.GHEventPayload;
 import org.kohsuke.github.GHIssue;
@@ -125,7 +126,8 @@ public class BuildReporterEventHandler {
                         gitHubGraphQLClient);
 
                 if (conclusion != Conclusion.FAILURE) {
-                    if (!pullRequest.isDraft() && conclusion == Conclusion.SUCCESS) {
+                    if (!pullRequest.isDraft() && conclusion == Conclusion.SUCCESS
+                            && !hasPendingCheckRuns(pullRequest)) {
                         pullRequest.comment(PULL_REQUEST_COMPLETED_SUCCESSFULLY + "\n\n" + WorkflowConstants.MESSAGE_ID_ACTIVE);
                     }
                     return;
@@ -396,6 +398,17 @@ public class BuildReporterEventHandler {
 
         public List<GHArtifact> getArtifacts() {
             return artifacts;
+        }
+    }
+
+    private static boolean hasPendingCheckRuns(GHPullRequest pullRequest) {
+        try {
+            return pullRequest.getRepository().getCheckRuns(pullRequest.getHead().getSha()).toList().stream()
+                    .anyMatch(cr -> cr.getStatus() == Status.QUEUED || cr.getStatus() == Status.IN_PROGRESS);
+        } catch (Exception e) {
+            LOG.warnf(e, "Error while getting check runs for %s#%s", pullRequest.getRepository().getFullName(),
+                    pullRequest.getNumber());
+            return false;
         }
     }
 }
