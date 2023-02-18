@@ -1,6 +1,6 @@
 package io.quarkus.bot.buildreporter.githubactions.urlshortener;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class NoopUrlShortener implements UrlShortener {

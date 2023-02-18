@@ -1,6 +1,6 @@
 package io.quarkus.bot.buildreporter.githubactions.report;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import io.quarkus.arc.DefaultBean;
 

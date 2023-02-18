@@ -1,6 +1,6 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import org.kohsuke.github.GHCheckRun;
 

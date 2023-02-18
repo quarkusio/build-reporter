@@ -21,7 +21,7 @@
         <plexus-containers.version>2.1.1</plexus-containers.version>
         <jackson-databind.version>2.14.1</jackson-databind.version>
 
-        <quarkus.version>2.15.3.Final</quarkus.version>
+        <quarkus.version>3.0.0.Alpha4</quarkus.version>
         <quarkus-github-app.version>1.16.0</quarkus-github-app.version>
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
