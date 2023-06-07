@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -162,7 +161,7 @@ public class WorkflowRunAnalyzer {
             for (TestResultsPath testResultPath : moduleReports.getTestResultsPaths()) {
                 try {
                     SurefireReportParser surefireReportsParser = new SurefireReportParser(
-                            Collections.singletonList(testResultPath.getPath().toFile()), Locale.ENGLISH,
+                            Collections.singletonList(testResultPath.getPath().toFile()),
                             new NullConsoleLogger());
                     reportTestSuites.addAll(surefireReportsParser.parseXMLReportFiles());
                     workflowReportTestCases.addAll(surefireReportsParser.getFailureDetails(reportTestSuites).stream()
