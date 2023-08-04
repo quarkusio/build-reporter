@@ -13,11 +13,14 @@ class BuildReports {
 
     private final Path jobDirectory;
     private final Path buildReportPath;
+    private final Path gradleBuildScanUrlPath;
     private final Set<TestResultsPath> testResultsPaths;
 
-    private BuildReports(Path jobDirectory, Path buildReportPath, Set<TestResultsPath> testResultsPaths) {
+    private BuildReports(Path jobDirectory, Path buildReportPath, Path gradleBuildScanUrlPath,
+            Set<TestResultsPath> testResultsPaths) {
         this.jobDirectory = jobDirectory;
         this.buildReportPath = buildReportPath;
+        this.gradleBuildScanUrlPath = gradleBuildScanUrlPath;
         this.testResultsPaths = Collections.unmodifiableSet(testResultsPaths);
     }
 
@@ -27,6 +30,10 @@ class BuildReports {
 
     public Path getBuildReportPath() {
         return buildReportPath;
+    }
+
+    public Path getGradleBuildScanUrlPath() {
+        return gradleBuildScanUrlPath;
     }
 
     public Set<TestResultsPath> getTestResultsPaths() {
@@ -44,6 +51,7 @@ class BuildReports {
 
         private final Path jobDirectory;
         private Path buildReportPath;
+        private Path gradleBuildScanUrlPath;
         private Set<TestResultsPath> testResultsPaths = new TreeSet<>();
 
         Builder(Path jobDirectory) {
@@ -53,6 +61,8 @@ class BuildReports {
         void addPath(Path path) {
             if (path.endsWith(WorkflowConstants.BUILD_REPORT_PATH)) {
                 buildReportPath = path;
+            } else if (path.endsWith(WorkflowConstants.GRADLE_BUILD_SCAN_URL_PATH)) {
+                gradleBuildScanUrlPath = path;
             } else if (path.endsWith(MAVEN_SUREFIRE_REPORTS_PATH)) {
                 testResultsPaths.add(new SurefireTestResultsPath(path));
             } else if (path.endsWith(MAVEN_FAILSAFE_REPORTS_PATH)) {
@@ -63,7 +73,7 @@ class BuildReports {
         }
 
         BuildReports build() {
-            return new BuildReports(jobDirectory, buildReportPath, testResultsPaths);
+            return new BuildReports(jobDirectory, buildReportPath, gradleBuildScanUrlPath, testResultsPaths);
         }
     }
 

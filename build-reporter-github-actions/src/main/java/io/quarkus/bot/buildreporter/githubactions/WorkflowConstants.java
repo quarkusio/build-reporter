@@ -6,6 +6,7 @@ public class WorkflowConstants {
 
     public static final String BUILD_REPORTS_ARTIFACT_PREFIX = "build-reports-";
     public static final Path BUILD_REPORT_PATH = Path.of("target", "build-report.json");
+    public static final Path GRADLE_BUILD_SCAN_URL_PATH = Path.of("target", "gradle-build-scan-url.txt");
     public static final String PULL_REQUEST_NUMBER_PREFIX = "pull-request-number-";
     public static final String REPORT_ISSUE_NUMBER_PREFIX = "report-issue-number-";
 
