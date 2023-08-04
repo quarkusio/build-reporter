@@ -21,13 +21,15 @@ public class WorkflowReportJob {
     private final String failingStep;
     private final String url;
     private final String rawLogsUrl;
+    private final String gradleBuildScanUrl;
     private final List<String> failingModules;
     private final List<String> skippedModules;
     private final List<WorkflowReportModule> modules;
     private final boolean errorDownloadingSurefireReports;
 
     public WorkflowReportJob(String name, String label, String failuresAnchor, Conclusion conclusion, String failingStep,
-            String url, String rawLogsUrl, BuildReport buildReport, List<WorkflowReportModule> modules,
+            String url, String rawLogsUrl, String gradleBuildScanUrl, BuildReport buildReport,
+            List<WorkflowReportModule> modules,
             boolean errorDownloadingSurefireReports) {
         this.name = name;
         this.label = label;
@@ -36,6 +38,7 @@ public class WorkflowReportJob {
         this.failingStep = failingStep;
         this.url = url;
         this.rawLogsUrl = rawLogsUrl;
+        this.gradleBuildScanUrl = gradleBuildScanUrl;
         this.failingModules = buildReport.getProjectReports().stream()
                 .filter(pr -> pr.getStatus() == BuildStatus.FAILURE)
                 .map(pr -> pr.getBasedir())
@@ -105,6 +108,10 @@ public class WorkflowReportJob {
 
     public String getRawLogsUrl() {
         return rawLogsUrl;
+    }
+
+    public String getGradleBuildScanUrl() {
+        return gradleBuildScanUrl;
     }
 
     public List<WorkflowReportModule> getModules() {

@@ -1,6 +1,7 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,7 +78,7 @@ public class WorkflowRunAnalyzer {
         for (GHWorkflowJob job : jobs) {
             if (job.getConclusion() != Conclusion.FAILURE && job.getConclusion() != Conclusion.CANCELLED) {
                 workflowReportJobs.add(new WorkflowReportJob(job.getName(), workflowJobLabeller.label(job.getName()),
-                        null, job.getConclusion(), null, null, null,
+                        null, job.getConclusion(), null, null, null, null,
                         EMPTY_BUILD_REPORT, Collections.emptyList(), false));
                 continue;
             }
@@ -85,6 +86,7 @@ public class WorkflowRunAnalyzer {
             Optional<BuildReports> buildReportsOptional = buildReportsMap.get(job.getName());
 
             BuildReport buildReport = EMPTY_BUILD_REPORT;
+            String gradleBuildScanUrl = null;
             List<WorkflowReportModule> modules = Collections.emptyList();
             boolean errorDownloadingBuildReports = false;
             if (buildReportsOptional != null) {
@@ -92,6 +94,13 @@ public class WorkflowRunAnalyzer {
                     BuildReports buildReports = buildReportsOptional.get();
                     if (buildReports.getBuildReportPath() != null) {
                         buildReport = getBuildReport(workflowContext, buildReports.getBuildReportPath());
+                    }
+                    if (buildReports.getGradleBuildScanUrlPath() != null) {
+                        try {
+                            gradleBuildScanUrl = Files.readString(buildReports.getGradleBuildScanUrlPath()).trim();
+                        } catch (Exception e) {
+                            LOG.warn("Unable to read file containing Gradle Build Scan URL", e);
+                        }
                     }
 
                     modules = getModules(workflowContext, buildReport, buildReports.getJobDirectory(),
@@ -111,6 +120,7 @@ public class WorkflowRunAnalyzer {
                     getFailingStep(job.getSteps()),
                     getJobUrl(job),
                     getRawLogsUrl(job, workflowRun.getHeadSha()),
+                    gradleBuildScanUrl,
                     buildReport,
                     modules,
                     errorDownloadingBuildReports));
