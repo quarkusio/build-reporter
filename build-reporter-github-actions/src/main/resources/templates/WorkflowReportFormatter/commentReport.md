@@ -14,11 +14,11 @@
 
 {#if !artifactsAvailable && !report.cancelled}:warning: Artifacts of the workflow run were not available thus the report misses some details.{/if}
 
-| Status | Name | Step | Failures | Logs | Raw logs |
+| Status | Name | Step | Failures | Logs | Raw logs | Build scan |
 | :-:  | --  | --  | :-:  | :-:  | :-:  |
 {#for job in report.jobs}
 {#if workflowReportJobIncludeStrategy.include(report, job)}
-| {job.conclusionEmoji} | {job.name} | {#if job.failingStep}`{job.failingStep}`{/if} | {#if job.reportedFailures}[Failures](#user-content-{job.failuresAnchor}){#else if job.failing}:warning: Check →{/if} | {#if job.url}[Logs]({job.url}){/if} | {#if job.rawLogsUrl}[Raw logs]({job.rawLogsUrl}){/if}
+| {job.conclusionEmoji} | {job.name} | {#if job.failingStep}`{job.failingStep}`{/if} | {#if job.reportedFailures}[Failures](#user-content-{job.failuresAnchor}){#else if job.failing}:warning: Check →{/if} | {#if job.url}[Logs]({job.url}){/if} | {#if job.rawLogsUrl}[Raw logs]({job.rawLogsUrl}){/if} | {#if job.gradleBuildScanUrl}[Build scan]({job.gradleBuildScanUrl}){/if}
 {/if}
 {/for}
 
