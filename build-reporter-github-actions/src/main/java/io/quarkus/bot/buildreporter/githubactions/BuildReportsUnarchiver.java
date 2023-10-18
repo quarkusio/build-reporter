@@ -39,7 +39,7 @@ class BuildReportsUnarchiver {
             Awaitility.await()
                     .atMost(Duration.ofMinutes(5))
                     .pollDelay(Duration.ofSeconds(5))
-                    .pollInterval(Duration.ofSeconds(30))
+                    .pollInterval(Duration.ofSeconds(60))
                     .until(artifactIsDownloaded);
         } catch (ConditionTimeoutException e) {
             LOG.warn(workflowContext.getLogContext()
@@ -73,7 +73,7 @@ class BuildReportsUnarchiver {
             try {
                 retry++;
                 buildReports = buildReportsArtifact
-                        .download((is) -> unzip(is, jobDirectory));
+                        .download((is) -> unzip(is, jobDirectory.resolve("retry-" + retry)));
                 return true;
             } catch (Exception e) {
                 LOG.error(workflowContext.getLogContext() + " - Unable to download artifact "
