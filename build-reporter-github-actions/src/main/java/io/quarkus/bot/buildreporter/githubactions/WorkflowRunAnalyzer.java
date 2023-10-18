@@ -189,6 +189,8 @@ public class WorkflowRunAnalyzer {
                 }
             }
 
+            Collections.sort(workflowReportTestCases);
+
             WorkflowReportModule module = new WorkflowReportModule(
                     moduleName,
                     moduleReports.getProjectReport(),
@@ -219,7 +221,7 @@ public class WorkflowRunAnalyzer {
                     buildReport.getProjectReports().stream().filter(pr -> normalizeModuleName(pr.getBasedir()).equals(module))
                             .findFirst().orElse(null),
                     testResultsPaths.stream().filter(trp -> normalizeModuleName(trp.getModuleName(jobDirectory)).equals(module))
-                            .collect(Collectors.toList())));
+                            .collect(Collectors.toCollection(TreeSet::new))));
         }
 
         return moduleReports;
@@ -280,9 +282,9 @@ public class WorkflowRunAnalyzer {
     private static class ModuleReports {
 
         private final ProjectReport projectReport;
-        private final List<TestResultsPath> testResultsPaths;
+        private final Set<TestResultsPath> testResultsPaths;
 
-        private ModuleReports(ProjectReport projectReport, List<TestResultsPath> testResultsPaths) {
+        private ModuleReports(ProjectReport projectReport, Set<TestResultsPath> testResultsPaths) {
             this.projectReport = projectReport;
             this.testResultsPaths = testResultsPaths;
         }
@@ -291,7 +293,7 @@ public class WorkflowRunAnalyzer {
             return projectReport;
         }
 
-        public List<TestResultsPath> getTestResultsPaths() {
+        public Set<TestResultsPath> getTestResultsPaths() {
             return testResultsPaths;
         }
     }

@@ -5,7 +5,7 @@ import org.apache.maven.plugins.surefire.report.ReportTestCase;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class WorkflowReportTestCase {
+public class WorkflowReportTestCase implements Comparable<WorkflowReportTestCase> {
 
     private final String classPath;
     private final String fullName;
@@ -65,5 +65,25 @@ public class WorkflowReportTestCase {
 
     public String getShortenedFailureUrl() {
         return shortenedFailureUrl;
+    }
+
+    @Override
+    public int compareTo(WorkflowReportTestCase o) {
+        int compare = this.fullName.compareTo(o.fullName);
+
+        if (compare != 0 ||
+                this.failureErrorLine == null || this.failureErrorLine.isBlank() ||
+                o.failureErrorLine == null || o.failureErrorLine.isBlank()) {
+            return compare;
+        }
+
+        try {
+            Integer thisLine = Integer.valueOf(this.failureErrorLine);
+            Integer otherLine = Integer.valueOf(o.failureErrorLine);
+
+            return thisLine.compareTo(otherLine);
+        } catch (NumberFormatException e) {
+            return compare;
+        }
     }
 }

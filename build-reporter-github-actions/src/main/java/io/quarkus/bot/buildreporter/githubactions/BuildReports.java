@@ -2,6 +2,7 @@ package io.quarkus.bot.buildreporter.githubactions;
 
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -99,6 +100,26 @@ class BuildReports {
         public int compareTo(TestResultsPath o) {
             return path.compareTo(o.getPath());
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(path);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            SurefireTestResultsPath other = (SurefireTestResultsPath) obj;
+            return Objects.equals(path, other.path);
+        }
     }
 
     static class FailsafeTestResultsPath implements TestResultsPath {
@@ -123,6 +144,26 @@ class BuildReports {
         public int compareTo(TestResultsPath o) {
             return path.compareTo(o.getPath());
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(path);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            FailsafeTestResultsPath other = (FailsafeTestResultsPath) obj;
+            return Objects.equals(path, other.path);
+        }
     }
 
     static class GradleTestResultsPath implements TestResultsPath {
@@ -146,6 +187,26 @@ class BuildReports {
         @Override
         public int compareTo(TestResultsPath o) {
             return path.compareTo(o.getPath());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(path);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            GradleTestResultsPath other = (GradleTestResultsPath) obj;
+            return Objects.equals(path, other.path);
         }
     }
 }

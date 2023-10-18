@@ -8,9 +8,11 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -301,7 +303,13 @@ public class BuildReporterEventHandler {
                 .sorted((a1, a2) -> a1.getName().compareTo(a2.getName()))
                 .collect(Collectors.toList());
 
+        Set<String> alreadyHandledArtifacts = new HashSet<>();
+
         for (GHArtifact artifact : buildReportsArtifacts) {
+            if (alreadyHandledArtifacts.contains(artifact.getName())) {
+                continue;
+            }
+
             Path jobDirectory = allBuildReportsDirectory.resolve(artifact.getName());
 
             Optional<BuildReports> buildReportsOptional = buildReportsUnarchiver.getBuildReports(workflowContext,
@@ -309,6 +317,8 @@ public class BuildReporterEventHandler {
 
             buildReportsMap.put(artifact.getName().replace(WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX, ""),
                     buildReportsOptional);
+
+            alreadyHandledArtifacts.add(artifact.getName());
         }
 
         return buildReportsMap;
