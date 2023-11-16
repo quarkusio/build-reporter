@@ -14,6 +14,8 @@ public class WorkflowConstants {
 
     public static final String MESSAGE_ID_ACTIVE = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-active -->";
     public static final String MESSAGE_ID_HIDDEN = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-hidden -->";
+    public static final String WORKFLOW_RUN_ID_MARKER = "<!-- Quarkus-GitHub-Bot/workflow-run-id:%1$s -->";
+    public static final String BUILD_SCANS_CHECK_RUN_MARKER = "<!-- Quarkus-GitHub-Bot/build-scans-check-run -->";
     public static final String HIDE_MESSAGE_PREFIX = """
             ---
             > :waning_crescent_moon: **_This workflow status is outdated as a new workflow run has been triggered._**

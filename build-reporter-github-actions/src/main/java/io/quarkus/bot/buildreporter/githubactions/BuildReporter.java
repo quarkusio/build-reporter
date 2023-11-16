@@ -65,10 +65,14 @@ public class BuildReporter {
         Optional<GHCheckRun> checkRunOptional = createCheckRun(workflowRun, buildReporterConfig, workflowContext,
                 artifactsAvailable, workflowReport);
 
+        String workflowRunIdMarker = String.format(WorkflowConstants.WORKFLOW_RUN_ID_MARKER, workflowRun.getId());
+
         String reportComment = workflowReportFormatter.getReportComment(workflowReport,
                 artifactsAvailable,
                 checkRunOptional.orElse(null),
                 WorkflowConstants.MESSAGE_ID_ACTIVE,
+                workflowRunIdMarker,
+                WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                 true,
                 true,
                 workflowReportJobIncludeStrategy);
@@ -77,6 +81,8 @@ public class BuildReporter {
                     artifactsAvailable,
                     checkRunOptional.orElse(null),
                     WorkflowConstants.MESSAGE_ID_ACTIVE,
+                    workflowRunIdMarker,
+                    WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                     false,
                     true,
                     workflowReportJobIncludeStrategy);
@@ -86,6 +92,8 @@ public class BuildReporter {
                     artifactsAvailable,
                     checkRunOptional.orElse(null),
                     WorkflowConstants.MESSAGE_ID_ACTIVE,
+                    workflowRunIdMarker,
+                    WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                     false,
                     false,
                     workflowReportJobIncludeStrategy);

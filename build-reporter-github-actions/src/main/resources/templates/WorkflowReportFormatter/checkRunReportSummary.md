@@ -15,7 +15,7 @@
 | :-:  | --  | --  | :-:  | :-:  | :-:  | :-:  |
 {#for job in report.jobs}
 {#if workflowReportJobIncludeStrategy.include(report, job)}
-| {job.conclusionEmoji} | {job.name} | {#if job.failingStep}`{job.failingStep}`{/if} | {#if job.reportedFailures}[Failures](#user-content-{job.failuresAnchor}){#else if job.failing}:warning: Check →{/if} | {#if job.url}[Logs]({job.url}){/if} | {#if job.rawLogsUrl}[Raw logs]({job.rawLogsUrl}){/if} | {#if job.gradleBuildScanUrl}[Build scan]({job.gradleBuildScanUrl}){/if}
+| {job.conclusionEmoji} | {job.name} | {#if job.failingStep}`{job.failingStep}`{/if} | {#if job.reportedFailures}[Failures](#user-content-{job.failuresAnchor}){#else if job.failing}:warning: Check →{/if} | {#if job.url}[Logs]({job.url}){/if} | {#if job.rawLogsUrl}[Raw logs]({job.rawLogsUrl}){/if} | {#if job.gradleBuildScanUrl}[:mag:]({job.gradleBuildScanUrl}){#else}:construction:{/if}
 {/if}
 {/for}
 {/if}
