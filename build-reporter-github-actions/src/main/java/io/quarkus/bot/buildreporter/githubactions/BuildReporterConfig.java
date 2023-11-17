@@ -12,13 +12,15 @@ public class BuildReporterConfig {
     private final Comparator<GHWorkflowJob> workflowJobComparator;
     private final Set<String> monitoredWorkflows;
     private final boolean createCheckRun;
+    private final boolean develocityEnabled;
 
     private BuildReporterConfig(boolean dryRun, Comparator<GHWorkflowJob> workflowJobComparator,
-            Set<String> monitoredWorkflows, boolean createCheckRun) {
+            Set<String> monitoredWorkflows, boolean createCheckRun, boolean develocityEnabled) {
         this.dryRun = dryRun;
         this.workflowJobComparator = workflowJobComparator;
         this.monitoredWorkflows = monitoredWorkflows;
         this.createCheckRun = createCheckRun;
+        this.develocityEnabled = develocityEnabled;
     }
 
     public boolean isDryRun() {
@@ -37,6 +39,10 @@ public class BuildReporterConfig {
         return createCheckRun;
     }
 
+    public boolean isDevelocityEnabled() {
+        return develocityEnabled;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -47,6 +53,7 @@ public class BuildReporterConfig {
         private boolean createCheckRun = true;
         private Comparator<GHWorkflowJob> workflowJobComparator = DefaultJobNameComparator.INSTANCE;
         private Set<String> monitoredWorkflows = Collections.emptySet();
+        private boolean develocityEnabled;
 
         public Builder dryRun(boolean dryRun) {
             this.dryRun = dryRun;
@@ -68,8 +75,14 @@ public class BuildReporterConfig {
             return this;
         }
 
+        public Builder enableDevelocity(boolean develocityEnabled) {
+            this.develocityEnabled = develocityEnabled;
+            return this;
+        }
+
         public BuildReporterConfig build() {
-            return new BuildReporterConfig(dryRun, workflowJobComparator, monitoredWorkflows, createCheckRun);
+            return new BuildReporterConfig(dryRun, workflowJobComparator, monitoredWorkflows, createCheckRun,
+                    develocityEnabled);
         }
     }
 
