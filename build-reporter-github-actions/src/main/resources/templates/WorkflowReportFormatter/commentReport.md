@@ -14,11 +14,11 @@
 
 {#if !artifactsAvailable && !report.cancelled}:warning: Artifacts of the workflow run were not available thus the report misses some details.{/if}
 
-| Status | Name | Step | Failures | Logs | Raw logs | Build scan |
-| :-:  | --  | --  | :-:  | :-:  | :-:  | :-:  |
+| Status | Name | Step | Failures | Logs | Raw logs |{#if develocityEnabled} Build scan |{/if}
+| :-:  | --  | --  | :-:  | :-:  | :-:  |{#if develocityEnabled} :-:  |{/if}
 {#for job in report.jobs}
 {#if workflowReportJobIncludeStrategy.include(report, job)}
-| {job.conclusionEmoji} | {job.name} | {#if job.failingStep}`{job.failingStep}`{/if} | {#if job.reportedFailures}[Failures](#user-content-{job.failuresAnchor}){#else if job.failing}:warning: Check →{/if} | {#if job.url}[Logs]({job.url}){/if} | {#if job.rawLogsUrl}[Raw logs]({job.rawLogsUrl}){/if} | {#if job.gradleBuildScanUrl}[:mag:]({job.gradleBuildScanUrl}){#else}:construction:{/if}
+| {job.conclusionEmoji} | {job.name} | {#if job.failingStep}`{job.failingStep}`{/if} | {#if job.reportedFailures}[Failures](#user-content-{job.failuresAnchor}){#else if job.failing}:warning: Check →{/if} | {#if job.url}[Logs]({job.url}){/if} | {#if job.rawLogsUrl}[Raw logs]({job.rawLogsUrl}){/if} |{#if develocityEnabled} {#if job.gradleBuildScanUrl}[:mag:]({job.gradleBuildScanUrl}){#else}:construction:{/if} |{/if}
 {/if}
 {/for}
 
@@ -26,7 +26,7 @@
 Full information is available in the [Build summary check run]({checkRun.htmlUrl}).
 {/if}
 {/if}
-{buildScansCheckRunMarker}
+{#if develocityEnabled}{buildScansCheckRunMarker}{/if}
 
 {#if report.errorDownloadingBuildReports}
 :warning: Errors occurred while downloading the build reports. This report is incomplete.

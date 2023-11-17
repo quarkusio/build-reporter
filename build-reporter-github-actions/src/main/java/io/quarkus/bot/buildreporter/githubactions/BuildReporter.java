@@ -73,6 +73,7 @@ public class BuildReporter {
                 WorkflowConstants.MESSAGE_ID_ACTIVE,
                 workflowRunIdMarker,
                 WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
+                buildReporterConfig.isDevelocityEnabled(),
                 true,
                 true,
                 workflowReportJobIncludeStrategy);
@@ -83,6 +84,7 @@ public class BuildReporter {
                     WorkflowConstants.MESSAGE_ID_ACTIVE,
                     workflowRunIdMarker,
                     WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
+                    buildReporterConfig.isDevelocityEnabled(),
                     false,
                     true,
                     workflowReportJobIncludeStrategy);
@@ -94,6 +96,7 @@ public class BuildReporter {
                     WorkflowConstants.MESSAGE_ID_ACTIVE,
                     workflowRunIdMarker,
                     WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
+                    buildReporterConfig.isDevelocityEnabled(),
                     false,
                     false,
                     workflowReportJobIncludeStrategy);
