@@ -130,7 +130,15 @@ public class BuildReporterEventHandler {
                 if (conclusion != Conclusion.FAILURE) {
                     if (!pullRequest.isDraft() && conclusion == Conclusion.SUCCESS
                             && !hasPendingCheckRuns(pullRequest)) {
-                        pullRequest.comment(PULL_REQUEST_COMPLETED_SUCCESSFULLY + "\n\n" + WorkflowConstants.MESSAGE_ID_ACTIVE);
+                        String successComment = PULL_REQUEST_COMPLETED_SUCCESSFULLY
+                                + "\n\n" + WorkflowConstants.MESSAGE_ID_ACTIVE
+                                + "\n" + String.format(WorkflowConstants.WORKFLOW_RUN_ID_MARKER, workflowRun.getId());
+
+                        if (buildReporterConfig.isDevelocityEnabled()) {
+                            successComment += "\n" + WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER;
+                        }
+
+                        pullRequest.comment(successComment);
                     }
                     return;
                 }
