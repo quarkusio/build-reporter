@@ -17,14 +17,17 @@ public class WorkflowReportModule {
     private final String projectReportFailure;
     private final List<ReportTestSuite> reportTestSuites;
     private final List<WorkflowReportTestCase> failures;
+    private final List<WorkflowReportFlakyTestCase> flakyTests;
 
     public WorkflowReportModule(String name, ProjectReport projectReport, String projectReportFailure,
-            List<ReportTestSuite> reportTestSuites, List<WorkflowReportTestCase> failures) {
+            List<ReportTestSuite> reportTestSuites, List<WorkflowReportTestCase> failures,
+            List<WorkflowReportFlakyTestCase> flakyTests) {
         this.name = name;
         this.projectReport = projectReport;
         this.projectReportFailure = projectReportFailure;
         this.reportTestSuites = reportTestSuites;
         this.failures = failures;
+        this.flakyTests = flakyTests;
     }
 
     public String getName() {
@@ -48,8 +51,21 @@ public class WorkflowReportModule {
         return projectReport != null && projectReport.getStatus() == BuildStatus.FAILURE;
     }
 
+    public boolean hasFlakyTests() {
+        for (ReportTestSuite reportTestSuite : reportTestSuites) {
+            if (reportTestSuite.getNumberOfFlakes() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public List<WorkflowReportTestCase> getTestFailures() {
         return failures;
+    }
+
+    public List<WorkflowReportFlakyTestCase> getFlakyTests() {
+        return flakyTests;
     }
 
     public int getTestCount() {

@@ -1,16 +1,20 @@
+# Status for workflow `{report.workflowName}`
+
+This is the status report for running `{report.workflowName}` on commit {report.sha}.
+
 {#if report.cancelled}
 :no_entry_sign: This workflow run has been cancelled.
 
 {/if}
+
 {#if !includeStackTraces}:warning: Unable to include the stracktraces as the report was too long. See annotations below for the details.{/if}
 {#if !includeFailureLinks}:warning: Unable to include the failure links as the report was too long. See annotations below for the details.{/if}
 
-{#if report.failure && !report.jobsFailing}
+{#if report.failure}
+{#if !report.jobsFailing}
 ✖ This workflow run has failed but no jobs reported an error. Something weird happened, please check [the workflow run page]({report.workflowRunUrl}) carefully: it might be an issue with the workflow configuration itself.
-
-{/if}
-{#if report.jobsFailing}
-## Failing Jobs - Building {report.sha}
+{#else}
+## Failing Jobs
 
 {#if !artifactsAvailable && !report.cancelled}:warning: Artifacts of the workflow run were not available thus the report misses some details.{/if}
 
@@ -45,7 +49,7 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 ```
 {/if}
 
-{#for module in job.modules}
+{#for module in job.modulesWithReportedFailures}
 #### :package: {module.name ? module.name : "Root project"}
 
 {#if module.testFailures}
@@ -70,6 +74,53 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 <p>We were unable to extract a useful error message.</p>
 
 {/if}
+{/for}
+{#if job_hasNext}
+
+---
+
+{/if}
+{/for}
+{/if}
+{#else if indicateSuccess}
+:white_check_mark: The latest workflow run for the pull request has completed successfully.
+
+It should be safe to merge provided you have a look at the other checks in the summary.
+
+{#if hasOtherPendingCheckRuns}
+:warning: There are other check runs running, make sure you don't need to wait for their status before merging.
+{/if}
+{#if develocityEnabled}{buildScansCheckRunMarker}{/if}
+{/if}
+
+{#if report.flakyTests}
+## Flaky tests
+
+{#for job in report.jobsWithFlakyTests}
+### :gear: {job.name}
+
+{#for module in job.modulesWithFlakyTests}
+#### :package: {module.name ? module.name : "Root project"}
+
+{#for flakyTest : module.flakyTests}
+<p>✖ <code>{flakyTest.fullName}</code></p>
+
+{#for flake : flakyTest.flakes}
+- `{flake.message}`{#if flake.type} - <code>{flake.type}</code>{/if}
+
+{#if flake.abbreviatedStackTrace.trim && includeStackTraces}
+<details>
+
+```
+{flake.abbreviatedStackTrace.trim}
+```
+
+</details>
+{/if}
+
+{/for}
+
+{/for}
 {/for}
 {#if job_hasNext}
 

@@ -13,7 +13,8 @@ public class WorkflowConstants {
     public static final String BUILD_SUMMARY_CHECK_RUN_PREFIX = "Build summary for ";
 
     public static final String MESSAGE_ID_ACTIVE = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-active -->";
-    public static final String MESSAGE_ID_HIDDEN = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-hidden -->";
+    public static final String MESSAGE_ID_ACTIVE_FOR_WORKFLOW = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-active:%1$s -->";
+    public static final String MESSAGE_ID_HIDDEN_FOR_WORKFLOW = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-hidden:%1$s -->";
     public static final String WORKFLOW_RUN_ID_MARKER = "<!-- Quarkus-GitHub-Bot/workflow-run-id:%1$s -->";
     public static final String BUILD_SCANS_CHECK_RUN_MARKER = "<!-- Quarkus-GitHub-Bot/build-scans-check-run -->";
     public static final String HIDE_MESSAGE_PREFIX = """
