@@ -25,7 +25,6 @@ import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 import org.jboss.logging.Logger;
 import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowJob;
 import org.kohsuke.github.GHWorkflowJob.Step;
 import org.kohsuke.github.GHWorkflowRun;
@@ -64,7 +63,7 @@ public class WorkflowRunAnalyzer {
     @Inject
     UrlShortener urlShortener;
 
-    public Optional<WorkflowReport> getReport(GHWorkflow workflow,
+    public Optional<WorkflowReport> getReport(String workflowName,
             GHWorkflowRun workflowRun,
             WorkflowContext workflowContext,
             List<GHWorkflowJob> jobs,
@@ -136,7 +135,7 @@ public class WorkflowRunAnalyzer {
             return Optional.empty();
         }
 
-        WorkflowReport report = new WorkflowReport(workflow.getName(), sha, workflowReportJobs,
+        WorkflowReport report = new WorkflowReport(workflowName, sha, workflowReportJobs,
                 workflowRunRepository.getFullName().equals(workflowContext.getRepository()),
                 workflowRun.getConclusion(), workflowRun.getHtmlUrl().toString());
 

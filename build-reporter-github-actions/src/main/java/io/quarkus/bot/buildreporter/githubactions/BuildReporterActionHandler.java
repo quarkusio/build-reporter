@@ -14,7 +14,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import org.jboss.logging.Logger;
-import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowJob;
 import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GHWorkflowRun.Conclusion;
@@ -32,12 +31,7 @@ public class BuildReporterActionHandler {
     @Inject
     BuildReporter buildReporter;
 
-    public Optional<String> generateReport(GHWorkflowRun workflowRun, Path buildReportsArtifactsPath,
-            BuildReporterConfig buildReporterConfig) throws IOException {
-        return generateReport(null, workflowRun, buildReportsArtifactsPath, buildReporterConfig);
-    }
-
-    public Optional<String> generateReport(GHWorkflow workflow, GHWorkflowRun workflowRun, Path buildReportsArtifactsPath,
+    public Optional<String> generateReport(String workflowName, GHWorkflowRun workflowRun, Path buildReportsArtifactsPath,
             BuildReporterConfig buildReporterConfig) throws IOException {
         Map<String, Optional<BuildReports>> buildReportsMap = prepareBuildReportMap(buildReportsArtifactsPath);
 
@@ -48,14 +42,15 @@ public class BuildReporterActionHandler {
                 .sorted(buildReporterConfig.getJobNameComparator())
                 .collect(Collectors.toList());
 
-        Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow, workflowRun, workflowContext,
+        Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflowName, workflowRun,
+                workflowContext,
                 jobs,
                 buildReportsMap);
         if (workflowReportOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        return buildReporter.generateReportComment(workflow, workflowRun, buildReporterConfig,
+        return buildReporter.generateReportComment(workflowName, workflowRun, buildReporterConfig,
                 workflowContext,
                 workflowReportOptional.get(), true, false, false);
     }

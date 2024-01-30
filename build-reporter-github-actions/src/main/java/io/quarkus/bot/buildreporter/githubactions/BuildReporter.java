@@ -18,7 +18,6 @@ import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GHCheckRunBuilder.Annotation;
 import org.kohsuke.github.GHCheckRunBuilder.Output;
-import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowRun;
 
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReport;
@@ -42,7 +41,7 @@ public class BuildReporter {
     @Inject
     StackTraceShortener stackTraceShortener;
 
-    public Optional<String> generateReportComment(GHWorkflow workflow,
+    public Optional<String> generateReportComment(String workflowName,
             GHWorkflowRun workflowRun,
             BuildReporterConfig buildReporterConfig,
             WorkflowContext workflowContext,
@@ -55,8 +54,8 @@ public class BuildReporter {
                 artifactsAvailable, workflowReport);
 
         String workflowRunIdMarker = String.format(WorkflowConstants.WORKFLOW_RUN_ID_MARKER, workflowRun.getId());
-        String statusCommentMarker = workflow == null ? WorkflowConstants.MESSAGE_ID_ACTIVE
-                : getActiveStatusCommentMarker(workflow.getName());
+        String statusCommentMarker = workflowName == null ? WorkflowConstants.MESSAGE_ID_ACTIVE
+                : getActiveStatusCommentMarker(workflowName);
 
         String reportComment = workflowReportFormatter.getReportComment(workflowReport,
                 artifactsAvailable,
