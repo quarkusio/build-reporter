@@ -145,7 +145,7 @@ public class BuildReporterEventHandler {
                         .sorted(buildReporterConfig.getJobNameComparator())
                         .collect(Collectors.toList());
 
-                Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow, workflowRun,
+                Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow.getName(), workflowRun,
                         workflowContext,
                         jobs,
                         buildReportsMap);
@@ -155,7 +155,7 @@ public class BuildReporterEventHandler {
 
                 WorkflowReport workflowReport = workflowReportOptional.get();
 
-                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflow, workflowRun,
+                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflow.getName(), workflowRun,
                         buildReporterConfig,
                         workflowContext,
                         workflowReport,
@@ -229,7 +229,7 @@ public class BuildReporterEventHandler {
                         .sorted(buildReporterConfig.getJobNameComparator())
                         .collect(Collectors.toList());
 
-                Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow, workflowRun,
+                Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow.getName(), workflowRun,
                         workflowContext,
                         jobs,
                         buildReportsMap);
@@ -239,7 +239,7 @@ public class BuildReporterEventHandler {
 
                 WorkflowReport workflowReport = workflowReportOptional.get();
 
-                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflow, workflowRun,
+                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflow.getName(), workflowRun,
                         buildReporterConfig,
                         workflowContext,
                         workflowReport, artifactsAvailable, false, false);
