@@ -1,6 +1,6 @@
 # Build Reporter
 
-[![Version](https://img.shields.io/maven-central/v/io.quarkus.bot/build-reporter-parent?logo=apache-maven&style=for-the-badge)](https://search.maven.org/artifact/io.quarkus.bot/build-reporter-parent)
+[![Version](https://img.shields.io/maven-central/v/io.quarkus.bot/build-reporter-parent?logo=apache-maven&style=for-the-badge)](https://central.sonatype.com/artifact/io.quarkus.bot/build-reporter-parent)
 
 ## About
 
