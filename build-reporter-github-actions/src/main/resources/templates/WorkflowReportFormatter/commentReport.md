@@ -89,6 +89,7 @@ It should be safe to merge provided you have a look at the other checks in the s
 
 {#if hasOtherPendingCheckRuns}
 :warning: There are other check runs running, make sure you don't need to wait for their status before merging.
+
 {/if}
 {#if develocityEnabled}{buildScansCheckRunMarker}{/if}
 {/if}

@@ -161,7 +161,7 @@ public class BuildReporterEventHandler {
                         workflowReport,
                         artifactsAvailable,
                         true,
-                        hasOtherPendingCheckRuns(pullRequest));
+                        hasOtherPendingCheckRuns(pullRequest, buildReporterConfig));
 
                 if (reportCommentOptional.isEmpty()) {
                     return;
@@ -458,7 +458,7 @@ public class BuildReporterEventHandler {
         }
     }
 
-    private static boolean hasOtherPendingCheckRuns(GHPullRequest pullRequest) {
+    private static boolean hasOtherPendingCheckRuns(GHPullRequest pullRequest, BuildReporterConfig buildReporterConfig) {
         try {
             return pullRequest.getRepository().getCheckRuns(pullRequest.getHead().getSha()).toList().stream()
                     .anyMatch(cr -> cr.getStatus() == Status.QUEUED || cr.getStatus() == Status.IN_PROGRESS);
