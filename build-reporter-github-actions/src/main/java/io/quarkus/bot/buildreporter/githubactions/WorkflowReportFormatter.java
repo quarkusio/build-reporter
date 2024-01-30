@@ -24,11 +24,13 @@ public class WorkflowReportFormatter {
 
     public String getReportComment(WorkflowReport report, boolean artifactsAvailable, GHCheckRun checkRun,
             String messageIdActive, String workflowRunId, String buildScansCheckRunMarker,
-            boolean develocityEnabled, boolean includeStackTraces, boolean includeFailureLinks,
+            boolean develocityEnabled, boolean indicateSuccess, boolean hasOtherPendingCheckRuns,
+            boolean includeStackTraces, boolean includeFailureLinks,
             WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy) {
         return Templates
                 .commentReport(report, artifactsAvailable, checkRun, messageIdActive, workflowRunId, buildScansCheckRunMarker,
-                        develocityEnabled, includeStackTraces, includeFailureLinks, workflowReportJobIncludeStrategy)
+                        develocityEnabled, indicateSuccess, hasOtherPendingCheckRuns,
+                        includeStackTraces, includeFailureLinks, workflowReportJobIncludeStrategy)
                 .render();
     }
 
@@ -43,7 +45,8 @@ public class WorkflowReportFormatter {
 
         public static native TemplateInstance commentReport(WorkflowReport report, boolean artifactsAvailable,
                 GHCheckRun checkRun, String messageIdActive, String workflowRunId, String buildScansCheckRunMarker,
-                boolean develocityEnabled, boolean includeStackTraces, boolean includeFailureLinks,
+                boolean develocityEnabled, boolean indicateSuccess, boolean hasOtherPendingCheckRuns,
+                boolean includeStackTraces, boolean includeFailureLinks,
                 WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy);
     }
 }

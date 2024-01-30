@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -24,6 +25,7 @@ import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 import org.jboss.logging.Logger;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowJob;
 import org.kohsuke.github.GHWorkflowJob.Step;
 import org.kohsuke.github.GHWorkflowRun;
@@ -35,6 +37,7 @@ import io.quarkus.bot.build.reporting.model.BuildReport;
 import io.quarkus.bot.build.reporting.model.ProjectReport;
 import io.quarkus.bot.buildreporter.githubactions.BuildReports.TestResultsPath;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReport;
+import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportFlakyTestCase;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportJob;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportModule;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportTestCase;
@@ -61,7 +64,8 @@ public class WorkflowRunAnalyzer {
     @Inject
     UrlShortener urlShortener;
 
-    public Optional<WorkflowReport> getReport(GHWorkflowRun workflowRun,
+    public Optional<WorkflowReport> getReport(GHWorkflow workflow,
+            GHWorkflowRun workflowRun,
             WorkflowContext workflowContext,
             List<GHWorkflowJob> jobs,
             Map<String, Optional<BuildReports>> buildReportsMap) throws IOException {
@@ -76,7 +80,8 @@ public class WorkflowRunAnalyzer {
         List<WorkflowReportJob> workflowReportJobs = new ArrayList<>();
 
         for (GHWorkflowJob job : jobs) {
-            if (job.getConclusion() != Conclusion.FAILURE && job.getConclusion() != Conclusion.CANCELLED) {
+            if (job.getConclusion() != Conclusion.FAILURE && job.getConclusion() != Conclusion.CANCELLED
+                    && job.getConclusion() != Conclusion.SUCCESS) {
                 workflowReportJobs.add(new WorkflowReportJob(job.getName(), workflowJobLabeller.label(job.getName()),
                         null, job.getConclusion(), null, null, null, null,
                         EMPTY_BUILD_REPORT, Collections.emptyList(), false));
@@ -131,7 +136,7 @@ public class WorkflowRunAnalyzer {
             return Optional.empty();
         }
 
-        WorkflowReport report = new WorkflowReport(sha, workflowReportJobs,
+        WorkflowReport report = new WorkflowReport(workflow.getName(), sha, workflowReportJobs,
                 workflowRunRepository.getFullName().equals(workflowContext.getRepository()),
                 workflowRun.getConclusion(), workflowRun.getHtmlUrl().toString());
 
@@ -168,6 +173,7 @@ public class WorkflowRunAnalyzer {
 
             List<ReportTestSuite> reportTestSuites = new ArrayList<>();
             List<WorkflowReportTestCase> workflowReportTestCases = new ArrayList<>();
+            List<WorkflowReportFlakyTestCase> workflowReportFlakyTestCases = new ArrayList<>();
             for (TestResultsPath testResultPath : moduleReports.getTestResultsPaths()) {
                 try {
                     SurefireReportParser surefireReportsParser = new SurefireReportParser(
@@ -183,6 +189,23 @@ public class WorkflowRunAnalyzer {
                                     getFailureUrl(workflowContext.getRepository(), sha, moduleName, rtc),
                                     urlShortener.shorten(getFailureUrl(workflowContext.getRepository(), sha, moduleName, rtc))))
                             .collect(Collectors.toList()));
+
+                    workflowReportFlakyTestCases.addAll(getFlakeDetails(reportTestSuites).stream()
+                            .filter(rtc -> !rtc.hasSkipped())
+                            .map(rtc -> new WorkflowReportFlakyTestCase(
+                                    WorkflowUtils.getFilePath(moduleName, rtc.getFullClassName()),
+                                    rtc,
+                                    Stream.concat(
+                                            rtc.getFlakyErrors().stream()
+                                                    .map(fe -> new WorkflowReportFlakyTestCase.Flake(fe.getMessage(),
+                                                            fe.getType(), fe.getStackTrace(),
+                                                            stackTraceShortener.shorten(fe.getStackTrace(), 1000, 8))),
+                                            rtc.getFlakyFailures().stream()
+                                                    .map(fe -> new WorkflowReportFlakyTestCase.Flake(fe.getMessage(),
+                                                            fe.getType(), fe.getStackTrace(),
+                                                            stackTraceShortener.shorten(fe.getStackTrace(), 1000, 8))))
+                                            .collect(Collectors.toList())))
+                            .collect(Collectors.toList()));
                 } catch (Exception e) {
                     LOG.error(workflowContext.getLogContext() + " - Unable to parse test results for file "
                             + testResultPath.getPath(), e);
@@ -190,6 +213,7 @@ public class WorkflowRunAnalyzer {
             }
 
             Collections.sort(workflowReportTestCases);
+            Collections.sort(workflowReportFlakyTestCases);
 
             WorkflowReportModule module = new WorkflowReportModule(
                     moduleName,
@@ -197,9 +221,10 @@ public class WorkflowRunAnalyzer {
                     moduleReports.getProjectReport() != null ? firstLines(moduleReports.getProjectReport().getError(), 5)
                             : null,
                     reportTestSuites,
-                    workflowReportTestCases);
+                    workflowReportTestCases,
+                    workflowReportFlakyTestCases);
 
-            if (module.hasReportedFailures()) {
+            if (module.hasReportedFailures() || module.hasFlakyTests()) {
                 modules.add(module);
             }
         }
@@ -269,6 +294,20 @@ public class WorkflowRunAnalyzer {
             sb.append("#L").append(reportTestCase.getFailureErrorLine());
         }
         return sb.toString();
+    }
+
+    private static List<ReportTestCase> getFlakeDetails(List<ReportTestSuite> testSuites) {
+        List<ReportTestCase> flakeDetails = new ArrayList<>();
+
+        for (ReportTestSuite suite : testSuites) {
+            for (ReportTestCase tCase : suite.getTestCases()) {
+                if (tCase.hasFlakes()) {
+                    flakeDetails.add(tCase);
+                }
+            }
+        }
+
+        return flakeDetails;
     }
 
     private static String firstLines(String string, int numberOfLines) {

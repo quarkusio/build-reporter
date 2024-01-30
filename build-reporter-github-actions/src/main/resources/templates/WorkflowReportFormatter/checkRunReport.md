@@ -13,7 +13,7 @@
 ```
 {/if}
 
-{#for module in job.modules}
+{#for module in job.modulesWithReportedFailures}
 #### :package: {module.name ? module.name : "Root project"}
 
 {#if module.testFailures}
@@ -58,3 +58,40 @@
 
 {/if}
 {/for}
+
+{#if report.flakyTests}
+## Flaky tests
+
+{#for job in report.jobsWithFlakyTests}
+### :gear: {job.name}
+
+{#for module in job.modulesWithFlakyTests}
+#### :package: {module.name ? module.name : "Root project"}
+
+{#for flakyTest : module.flakyTests}
+<p>✖ <code>{flakyTest.fullName}</code></p>
+
+{#for flake : flakyTest.flakes}
+- `{flake.message}`{#if flake.type} - <code>{flake.type}</code>{/if}
+
+{#if flake.abbreviatedStackTrace.trim && includeStackTraces}
+<details>
+
+```
+{flake.abbreviatedStackTrace.trim}
+```
+
+</details>
+{/if}
+
+{/for}
+
+{/for}
+{/for}
+{#if job_hasNext}
+
+---
+
+{/if}
+{/for}
+{/if}

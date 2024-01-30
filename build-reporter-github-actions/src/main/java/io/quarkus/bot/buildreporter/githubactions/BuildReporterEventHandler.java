@@ -1,5 +1,8 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
+import static io.quarkus.bot.buildreporter.githubactions.WorkflowUtils.getActiveStatusCommentMarker;
+import static io.quarkus.bot.buildreporter.githubactions.WorkflowUtils.getHiddenStatusCommentMarker;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,11 +35,13 @@ import org.kohsuke.github.GHIssueComment;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHWorkflow;
+import org.kohsuke.github.GHWorkflowJob;
 import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GHWorkflowRun.Conclusion;
 import org.kohsuke.github.GitHub;
 
 import io.quarkiverse.githubapp.event.Actions;
+import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReport;
 import io.smallrye.graphql.client.dynamic.api.DynamicGraphQLClient;
 
 @Singleton
@@ -44,10 +49,10 @@ public class BuildReporterEventHandler {
 
     private static final Logger LOG = Logger.getLogger(BuildReporterEventHandler.class);
 
-    public static final String PULL_REQUEST_COMPLETED_SUCCESSFULLY = """
-            :heavy_check_mark: The latest workflow run for the pull request has completed successfully.
+    private static final String LABEL_FLAKY_TEST = "triage/flaky-test";
 
-            It should be safe to merge provided you have a look at the other checks in the summary.""";
+    @Inject
+    WorkflowRunAnalyzer workflowRunAnalyzer;
 
     @Inject
     BuildReporter buildReporter;
@@ -72,10 +77,10 @@ public class BuildReporterEventHandler {
 
         switch (workflowRunPayload.getAction()) {
             case Actions.COMPLETED:
-                handleCompleted(workflowRun, buildReporterConfig, gitHub, gitHubGraphQLClient);
+                handleCompleted(workflow, workflowRun, buildReporterConfig, gitHub, gitHubGraphQLClient);
                 break;
             case Actions.REQUESTED:
-                handleRequested(workflowRun, buildReporterConfig, gitHub, gitHubGraphQLClient);
+                handleRequested(workflow, workflowRun, buildReporterConfig, gitHub, gitHubGraphQLClient);
                 break;
             default:
                 // we don't do anything for other actions
@@ -83,7 +88,8 @@ public class BuildReporterEventHandler {
         }
     }
 
-    private void handleCompleted(GHWorkflowRun workflowRun,
+    private void handleCompleted(GHWorkflow workflow,
+            GHWorkflowRun workflowRun,
             BuildReporterConfig buildReporterConfig,
             GitHub gitHub,
             DynamicGraphQLClient gitHubGraphQLClient) throws IOException {
@@ -125,31 +131,37 @@ public class BuildReporterEventHandler {
                 WorkflowContext workflowContext = new WorkflowContext(pullRequest);
 
                 hideOutdatedWorkflowRunResults(buildReporterConfig, workflowContext, pullRequest,
-                        gitHubGraphQLClient);
+                        workflow.getName(), gitHubGraphQLClient);
 
-                if (conclusion != Conclusion.FAILURE) {
-                    if (!pullRequest.isDraft() && conclusion == Conclusion.SUCCESS
-                            && !hasPendingCheckRuns(pullRequest)) {
-                        String successComment = PULL_REQUEST_COMPLETED_SUCCESSFULLY
-                                + "\n\n" + WorkflowConstants.MESSAGE_ID_ACTIVE
-                                + "\n" + String.format(WorkflowConstants.WORKFLOW_RUN_ID_MARKER, workflowRun.getId());
-
-                        if (buildReporterConfig.isDevelocityEnabled()) {
-                            successComment += "\n" + WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER;
-                        }
-
-                        pullRequest.comment(successComment);
-                    }
+                if (conclusion == Conclusion.SUCCESS && pullRequest.isDraft()) {
                     return;
                 }
 
                 Map<String, Optional<BuildReports>> buildReportsMap = downloadBuildReports(workflowContext,
                         allBuildReportsDirectory,
                         artifacts, artifactsAvailable);
+                List<GHWorkflowJob> jobs = workflowRun.listJobs().toList()
+                        .stream()
+                        .sorted(buildReporterConfig.getJobNameComparator())
+                        .collect(Collectors.toList());
 
-                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflowRun, buildReporterConfig,
+                Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow, workflowRun,
                         workflowContext,
-                        buildReportsMap, artifactsAvailable);
+                        jobs,
+                        buildReportsMap);
+                if (workflowReportOptional.isEmpty()) {
+                    return;
+                }
+
+                WorkflowReport workflowReport = workflowReportOptional.get();
+
+                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflow, workflowRun,
+                        buildReporterConfig,
+                        workflowContext,
+                        workflowReport,
+                        artifactsAvailable,
+                        true,
+                        hasOtherPendingCheckRuns(pullRequest));
 
                 if (reportCommentOptional.isEmpty()) {
                     return;
@@ -162,6 +174,14 @@ public class BuildReporterEventHandler {
                 } else {
                     LOG.info("Pull request #" + pullRequest.getNumber() + " - Add test failures:\n" + reportComment);
                 }
+
+                if (workflowReport.hasFlakyTests()) {
+                    if (!buildReporterConfig.isDryRun()) {
+                        pullRequest.addLabels(LABEL_FLAKY_TEST);
+                    } else {
+                        LOG.info("Pull request #" + pullRequest.getNumber() + " - Add label " + LABEL_FLAKY_TEST);
+                    }
+                }
             } else {
                 Optional<GHIssue> reportIssueOptional = getAssociatedReportIssue(gitHub, workflowRun, artifacts);
 
@@ -173,7 +193,7 @@ public class BuildReporterEventHandler {
                 WorkflowContext workflowContext = new WorkflowContext(reportIssue);
 
                 hideOutdatedWorkflowRunResults(buildReporterConfig, workflowContext, reportIssue,
-                        gitHubGraphQLClient);
+                        workflow.getName(), gitHubGraphQLClient);
 
                 if (conclusion == Conclusion.SUCCESS
                         && reportIssue.getState() == GHIssueState.OPEN) {
@@ -204,9 +224,25 @@ public class BuildReporterEventHandler {
                         allBuildReportsDirectory,
                         artifacts, artifactsAvailable);
 
-                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflowRun, buildReporterConfig,
+                List<GHWorkflowJob> jobs = workflowRun.listJobs().toList()
+                        .stream()
+                        .sorted(buildReporterConfig.getJobNameComparator())
+                        .collect(Collectors.toList());
+
+                Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow, workflowRun,
                         workflowContext,
-                        buildReportsMap, artifactsAvailable);
+                        jobs,
+                        buildReportsMap);
+                if (workflowReportOptional.isEmpty()) {
+                    return;
+                }
+
+                WorkflowReport workflowReport = workflowReportOptional.get();
+
+                Optional<String> reportCommentOptional = buildReporter.generateReportComment(workflow, workflowRun,
+                        buildReporterConfig,
+                        workflowContext,
+                        workflowReport, artifactsAvailable, false, false);
 
                 if (reportCommentOptional.isEmpty()) {
                     // not able to generate a proper report but let's post a default comment anyway
@@ -332,7 +368,7 @@ public class BuildReporterEventHandler {
         return buildReportsMap;
     }
 
-    private void handleRequested(GHWorkflowRun workflowRun,
+    private void handleRequested(GHWorkflow workflow, GHWorkflowRun workflowRun,
             BuildReporterConfig buildReporterConfig,
             GitHub gitHub, DynamicGraphQLClient gitHubGraphQLClient) throws IOException {
 
@@ -345,24 +381,27 @@ public class BuildReporterEventHandler {
         }
 
         hideOutdatedWorkflowRunResults(buildReporterConfig, new WorkflowContext(pullRequests.get(0)), pullRequests.get(0),
-                gitHubGraphQLClient);
+                workflow.getName(), gitHubGraphQLClient);
     }
 
     private static void hideOutdatedWorkflowRunResults(BuildReporterConfig buildReporterConfig,
             WorkflowContext workflowContext, GHIssue issue,
+            String workflowName,
             DynamicGraphQLClient gitHubGraphQLClient)
             throws IOException {
         List<GHIssueComment> comments = issue.getComments();
 
         for (GHIssueComment comment : comments) {
-            if (!comment.getBody().contains(WorkflowConstants.MESSAGE_ID_ACTIVE)) {
+            if (!comment.getBody().contains(WorkflowConstants.MESSAGE_ID_ACTIVE) &&
+                    !comment.getBody().contains(getActiveStatusCommentMarker(workflowName))) {
                 continue;
             }
 
             StringBuilder updatedComment = new StringBuilder();
             updatedComment.append(WorkflowConstants.HIDE_MESSAGE_PREFIX);
-            updatedComment.append(comment.getBody().replace(WorkflowConstants.MESSAGE_ID_ACTIVE,
-                    WorkflowConstants.MESSAGE_ID_HIDDEN));
+            updatedComment.append(comment.getBody().replace(getActiveStatusCommentMarker(workflowName),
+                    getHiddenStatusCommentMarker(workflowName))
+                    .replace(WorkflowConstants.MESSAGE_ID_ACTIVE, getHiddenStatusCommentMarker(workflowName)));
 
             if (!buildReporterConfig.isDryRun()) {
                 try {
@@ -419,7 +458,7 @@ public class BuildReporterEventHandler {
         }
     }
 
-    private static boolean hasPendingCheckRuns(GHPullRequest pullRequest) {
+    private static boolean hasOtherPendingCheckRuns(GHPullRequest pullRequest) {
         try {
             return pullRequest.getRepository().getCheckRuns(pullRequest.getHead().getSha()).toList().stream()
                     .anyMatch(cr -> cr.getStatus() == Status.QUEUED || cr.getStatus() == Status.IN_PROGRESS);

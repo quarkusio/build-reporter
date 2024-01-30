@@ -118,6 +118,14 @@ public class WorkflowReportJob {
         return modules;
     }
 
+    public List<WorkflowReportModule> getModulesWithReportedFailures() {
+        return modules.stream().filter(m -> m.hasReportedFailures()).collect(Collectors.toList());
+    }
+
+    public List<WorkflowReportModule> getModulesWithFlakyTests() {
+        return modules.stream().filter(m -> m.hasFlakyTests()).collect(Collectors.toList());
+    }
+
     public boolean hasReportedFailures() {
         return hasBuildReportFailures() || hasTestFailures();
     }
@@ -134,6 +142,15 @@ public class WorkflowReportJob {
     public boolean hasTestFailures() {
         for (WorkflowReportModule module : modules) {
             if (module.hasTestFailures()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasFlakyTests() {
+        for (WorkflowReportModule module : modules) {
+            if (module.hasFlakyTests()) {
                 return true;
             }
         }

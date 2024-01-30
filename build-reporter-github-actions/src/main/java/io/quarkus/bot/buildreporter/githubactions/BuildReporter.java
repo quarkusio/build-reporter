@@ -1,9 +1,10 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
+import static io.quarkus.bot.buildreporter.githubactions.WorkflowUtils.getActiveStatusCommentMarker;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GHCheckRunBuilder.Annotation;
 import org.kohsuke.github.GHCheckRunBuilder.Output;
-import org.kohsuke.github.GHWorkflowJob;
+import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowRun;
 
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReport;
@@ -33,9 +34,6 @@ public class BuildReporter {
     private static final int GITHUB_FIELD_LENGTH_HARD_LIMIT = 65000;
 
     @Inject
-    WorkflowRunAnalyzer workflowRunAnalyzer;
-
-    @Inject
     WorkflowReportFormatter workflowReportFormatter;
 
     @Inject
@@ -44,36 +42,31 @@ public class BuildReporter {
     @Inject
     StackTraceShortener stackTraceShortener;
 
-    public Optional<String> generateReportComment(GHWorkflowRun workflowRun,
+    public Optional<String> generateReportComment(GHWorkflow workflow,
+            GHWorkflowRun workflowRun,
             BuildReporterConfig buildReporterConfig,
             WorkflowContext workflowContext,
-            Map<String, Optional<BuildReports>> buildReportsMap,
-            boolean artifactsAvailable) throws IOException {
-        List<GHWorkflowJob> jobs = workflowRun.listJobs().toList()
-                .stream()
-                .sorted(buildReporterConfig.getJobNameComparator())
-                .collect(Collectors.toList());
-
-        Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflowRun, workflowContext, jobs,
-                buildReportsMap);
-        if (workflowReportOptional.isEmpty()) {
-            return Optional.empty();
-        }
-
-        WorkflowReport workflowReport = workflowReportOptional.get();
+            WorkflowReport workflowReport,
+            boolean artifactsAvailable,
+            boolean indicateSuccess,
+            boolean hasOtherPendingCheckRuns) throws IOException {
 
         Optional<GHCheckRun> checkRunOptional = createCheckRun(workflowRun, buildReporterConfig, workflowContext,
                 artifactsAvailable, workflowReport);
 
         String workflowRunIdMarker = String.format(WorkflowConstants.WORKFLOW_RUN_ID_MARKER, workflowRun.getId());
+        String statusCommentMarker = workflow == null ? WorkflowConstants.MESSAGE_ID_ACTIVE
+                : getActiveStatusCommentMarker(workflow.getName());
 
         String reportComment = workflowReportFormatter.getReportComment(workflowReport,
                 artifactsAvailable,
                 checkRunOptional.orElse(null),
-                WorkflowConstants.MESSAGE_ID_ACTIVE,
+                statusCommentMarker,
                 workflowRunIdMarker,
                 WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                 buildReporterConfig.isDevelocityEnabled(),
+                indicateSuccess,
+                hasOtherPendingCheckRuns,
                 true,
                 true,
                 workflowReportJobIncludeStrategy);
@@ -81,10 +74,12 @@ public class BuildReporter {
             reportComment = workflowReportFormatter.getReportComment(workflowReport,
                     artifactsAvailable,
                     checkRunOptional.orElse(null),
-                    WorkflowConstants.MESSAGE_ID_ACTIVE,
+                    statusCommentMarker,
                     workflowRunIdMarker,
                     WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                     buildReporterConfig.isDevelocityEnabled(),
+                    indicateSuccess,
+                    hasOtherPendingCheckRuns,
                     false,
                     true,
                     workflowReportJobIncludeStrategy);
@@ -93,10 +88,12 @@ public class BuildReporter {
             reportComment = workflowReportFormatter.getReportComment(workflowReport,
                     artifactsAvailable,
                     checkRunOptional.orElse(null),
-                    WorkflowConstants.MESSAGE_ID_ACTIVE,
+                    statusCommentMarker,
                     workflowRunIdMarker,
                     WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                     buildReporterConfig.isDevelocityEnabled(),
+                    indicateSuccess,
+                    hasOtherPendingCheckRuns,
                     false,
                     false,
                     workflowReportJobIncludeStrategy);

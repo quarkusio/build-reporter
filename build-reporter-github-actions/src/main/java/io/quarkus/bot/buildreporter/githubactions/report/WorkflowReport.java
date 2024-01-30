@@ -10,19 +10,25 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class WorkflowReport {
 
+    private final String workflowName;
     private final String sha;
     private final List<WorkflowReportJob> jobs;
     private final boolean sameRepository;
     private final Conclusion conclusion;
     private final String workflowRunUrl;
 
-    public WorkflowReport(String sha, List<WorkflowReportJob> jobs, boolean sameRepository, Conclusion conclusion,
-            String workflowRunUrl) {
+    public WorkflowReport(String workflowName, String sha, List<WorkflowReportJob> jobs, boolean sameRepository,
+            Conclusion conclusion, String workflowRunUrl) {
+        this.workflowName = workflowName;
         this.sha = sha;
         this.jobs = jobs;
         this.sameRepository = sameRepository;
         this.conclusion = conclusion;
         this.workflowRunUrl = workflowRunUrl;
+    }
+
+    public String getWorkflowName() {
+        return workflowName;
     }
 
     public String getSha() {
@@ -50,6 +56,10 @@ public class WorkflowReport {
         return jobs.stream().filter(j -> j.hasReportedFailures()).collect(Collectors.toList());
     }
 
+    public List<WorkflowReportJob> getJobsWithFlakyTests() {
+        return jobs.stream().filter(j -> j.hasFlakyTests()).collect(Collectors.toList());
+    }
+
     public boolean hasReportedFailures() {
         return hasBuildReportFailures() || hasTestFailures();
     }
@@ -66,6 +76,15 @@ public class WorkflowReport {
     public boolean hasTestFailures() {
         for (WorkflowReportJob job : jobs) {
             if (job.hasTestFailures()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasFlakyTests() {
+        for (WorkflowReportJob job : jobs) {
+            if (job.hasFlakyTests()) {
                 return true;
             }
         }

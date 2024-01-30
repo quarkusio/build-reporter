@@ -19,3 +19,7 @@
 {/if}
 {/for}
 {/if}
+
+{#if report.flakyTests}
+:warning: This workflow run had flaky tests. See details for more information.
+{/if}

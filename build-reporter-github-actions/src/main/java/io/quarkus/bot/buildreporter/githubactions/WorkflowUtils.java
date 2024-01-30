@@ -11,6 +11,14 @@ public final class WorkflowUtils {
         return moduleName + "/src/test/java/" + classPath + ".java";
     }
 
+    public static String getActiveStatusCommentMarker(String workflowName) {
+        return String.format(WorkflowConstants.MESSAGE_ID_ACTIVE_FOR_WORKFLOW, workflowName);
+    }
+
+    public static String getHiddenStatusCommentMarker(String workflowName) {
+        return String.format(WorkflowConstants.MESSAGE_ID_HIDDEN_FOR_WORKFLOW, workflowName);
+    }
+
     private WorkflowUtils() {
     }
 }
