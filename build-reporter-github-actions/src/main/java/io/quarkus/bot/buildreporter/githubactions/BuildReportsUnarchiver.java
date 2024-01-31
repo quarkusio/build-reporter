@@ -26,6 +26,8 @@ class BuildReportsUnarchiver {
 
     private static final Logger LOG = Logger.getLogger(BuildReportsUnarchiver.class);
 
+    private static final String NESTED_ZIP_FILE_NAME = "build-reports.zip";
+
     @Inject
     UrlShortener urlShortener;
 
@@ -102,6 +104,8 @@ class BuildReportsUnarchiver {
                         if (!newFile.isDirectory() && !newFile.mkdirs()) {
                             throw new IOException("Failed to create directory " + newFile);
                         }
+                    } else if (NESTED_ZIP_FILE_NAME.equals(zipEntry.getName())) {
+                        return unzip(zis, jobDirectory);
                     } else {
                         File parent = newFile.getParentFile();
                         if (!parent.isDirectory() && !parent.mkdirs()) {
@@ -113,6 +117,7 @@ class BuildReportsUnarchiver {
                         while ((len = zis.read(buffer)) > 0) {
                             fos.write(buffer, 0, len);
                         }
+
                         fos.close();
                     }
                     zipEntry = zis.getNextEntry();
