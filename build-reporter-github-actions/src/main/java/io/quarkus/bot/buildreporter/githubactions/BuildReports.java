@@ -2,6 +2,7 @@ package io.quarkus.bot.buildreporter.githubactions;
 
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,12 +49,24 @@ class BuildReports {
         String getModuleName(Path jobDirectory);
     }
 
+    @Override
+    public String toString() {
+        return "BuildReports[\n"
+                + "    jobDirectory=" + jobDirectory + "\n"
+                + "    buildReportPath=" + buildReportPath + "\n"
+                + "    gradleBuildScanUrlPath=" + gradleBuildScanUrlPath + "\n"
+                + "    testResultsPaths=" + testResultsPaths + "\n"
+                + "]";
+    }
+
     static class Builder {
 
         private final Path jobDirectory;
         private Path buildReportPath;
         private Path gradleBuildScanUrlPath;
         private Set<TestResultsPath> testResultsPaths = new TreeSet<>();
+
+        private Set<Path> alreadyTreatedPaths = new HashSet<>();
 
         Builder(Path jobDirectory) {
             this.jobDirectory = jobDirectory;
@@ -62,15 +75,47 @@ class BuildReports {
         void addPath(Path path) {
             if (path.endsWith(WorkflowConstants.BUILD_REPORT_PATH)) {
                 buildReportPath = path;
-            } else if (path.endsWith(WorkflowConstants.GRADLE_BUILD_SCAN_URL_PATH)) {
-                gradleBuildScanUrlPath = path;
-            } else if (path.endsWith(MAVEN_SUREFIRE_REPORTS_PATH)) {
-                testResultsPaths.add(new SurefireTestResultsPath(path));
-            } else if (path.endsWith(MAVEN_FAILSAFE_REPORTS_PATH)) {
-                testResultsPaths.add(new FailsafeTestResultsPath(path));
-            } else if (path.endsWith(GRADLE_REPORTS_PATH)) {
-                testResultsPaths.add(new GradleTestResultsPath(path));
+                return;
             }
+            if (path.endsWith(WorkflowConstants.GRADLE_BUILD_SCAN_URL_PATH)) {
+                gradleBuildScanUrlPath = path;
+                return;
+            }
+
+            // when we upload the files directly with upload-artifact,
+            // we get entries for the directories so we can directly
+            // resolve them
+            if (addTestPath(path)) {
+                return;
+            }
+
+            // when we are building a zip with the zip command,
+            // we don't get so lucky so we need to resolve the parent
+            // directory
+            // all the test files are stored in the same parent directory,
+            // there is no nesting
+            addTestPath(path.getParent());
+        }
+
+        private boolean addTestPath(Path path) {
+            if (path == null || alreadyTreatedPaths.contains(path)) {
+                return true;
+            }
+
+            if (path.endsWith(MAVEN_SUREFIRE_REPORTS_PATH)) {
+                testResultsPaths.add(new SurefireTestResultsPath(path));
+                return true;
+            }
+            if (path.endsWith(MAVEN_FAILSAFE_REPORTS_PATH)) {
+                testResultsPaths.add(new FailsafeTestResultsPath(path));
+                return true;
+            }
+            if (path.endsWith(GRADLE_REPORTS_PATH)) {
+                testResultsPaths.add(new GradleTestResultsPath(path));
+                return true;
+            }
+
+            return false;
         }
 
         BuildReports build() {
@@ -99,6 +144,11 @@ class BuildReports {
         @Override
         public int compareTo(TestResultsPath o) {
             return path.compareTo(o.getPath());
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getName() + "[" + path + "]";
         }
 
         @Override
@@ -138,6 +188,11 @@ class BuildReports {
         @Override
         public String getModuleName(Path jobDirectory) {
             return jobDirectory.relativize(path).getParent().getParent().toString();
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getName() + "[" + path + "]";
         }
 
         @Override
@@ -182,6 +237,11 @@ class BuildReports {
         @Override
         public String getModuleName(Path jobDirectory) {
             return jobDirectory.relativize(path).getParent().getParent().getParent().toString();
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getName() + "[" + path + "]";
         }
 
         @Override
