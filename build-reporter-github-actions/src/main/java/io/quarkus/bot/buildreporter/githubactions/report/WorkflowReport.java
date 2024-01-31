@@ -107,7 +107,7 @@ public class WorkflowReport {
     }
 
     public boolean isFailure() {
-        return Conclusion.FAILURE.equals(conclusion);
+        return Conclusion.FAILURE.equals(conclusion) || hasJobsFailing();
     }
 
     public String getWorkflowRunUrl() {

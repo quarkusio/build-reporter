@@ -90,8 +90,8 @@ public class WorkflowReportJob {
     }
 
     public boolean isFailing() {
-        return !Conclusion.SUCCESS.equals(conclusion) &&
-                !Conclusion.SKIPPED.equals(conclusion);
+        return (!Conclusion.SUCCESS.equals(conclusion) && !Conclusion.SKIPPED.equals(conclusion))
+                || hasReportedFailures();
     }
 
     public boolean isSkipped() {

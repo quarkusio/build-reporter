@@ -95,6 +95,9 @@ It should be safe to merge provided you have a look at the other checks in the s
 {/if}
 
 {#if report.flakyTests}
+
+---
+
 ## Flaky tests
 
 {#for job in report.jobsWithFlakyTests}
