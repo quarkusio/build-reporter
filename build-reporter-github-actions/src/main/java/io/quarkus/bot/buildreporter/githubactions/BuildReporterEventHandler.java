@@ -27,7 +27,6 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.jboss.logging.Logger;
 import org.kohsuke.github.GHArtifact;
-import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHEvent;
 import org.kohsuke.github.GHEventPayload;
 import org.kohsuke.github.GHIssue;
@@ -38,6 +37,7 @@ import org.kohsuke.github.GHWorkflow;
 import org.kohsuke.github.GHWorkflowJob;
 import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GHWorkflowRun.Conclusion;
+import org.kohsuke.github.GHWorkflowRun.Status;
 import org.kohsuke.github.GitHub;
 
 import io.quarkiverse.githubapp.event.Actions;
@@ -461,12 +461,23 @@ public class BuildReporterEventHandler {
 
     private static boolean hasOtherPendingWorkflowRuns(GHPullRequest pullRequest, BuildReporterConfig buildReporterConfig) {
         try {
-            return pullRequest.getRepository().getCheckRuns(pullRequest.getHead().getSha()).toList().stream()
-                    .anyMatch(cr -> cr.getStatus() == Status.QUEUED || cr.getStatus() == Status.IN_PROGRESS);
+            return pullRequest.getRepository().queryWorkflowRuns().headSha(pullRequest.getHead().getSha()).list().toList()
+                    .stream()
+                    .filter(w -> isWorkflowMonitored(w, buildReporterConfig))
+                    .anyMatch(w -> w.getStatus() == Status.QUEUED || w.getStatus() == Status.IN_PROGRESS);
         } catch (Exception e) {
-            LOG.warnf(e, "Error while getting check runs for %s#%s", pullRequest.getRepository().getFullName(),
+            LOG.warnf(e, "Error while getting workflow runs for %s#%s", pullRequest.getRepository().getFullName(),
                     pullRequest.getNumber());
             return false;
         }
+    }
+
+    private static boolean isWorkflowMonitored(GHWorkflowRun workflowRun, BuildReporterConfig buildReporterConfig) {
+        for (String workflowName : buildReporterConfig.getMonitoredWorkflows()) {
+            if (workflowName.equals(workflowRun.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
