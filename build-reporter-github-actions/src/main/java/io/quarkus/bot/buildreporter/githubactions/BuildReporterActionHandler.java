@@ -1,6 +1,9 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -9,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -71,14 +76,26 @@ public class BuildReporterActionHandler {
 
                 BuildReports.Builder buildReportsBuilder = new BuildReports.Builder(jobBuildReportsDirectory);
 
-                try (Stream<Path> jobBuildReportsFilesStream = Files.walk(jobBuildReportsDirectory)) {
-                    jobBuildReportsFilesStream.forEach(p -> buildReportsBuilder.addPath(p));
+                Path buildReportsArchive = jobBuildReportsDirectory.resolve(BuildReportsUnarchiver.NESTED_ZIP_FILE_NAME);
+                if (Files.isReadable(buildReportsArchive)) {
+                    try {
+                        try (InputStream buildReportsZipIs = Files.newInputStream(buildReportsArchive)) {
+                            buildReportsMap.put(jobName, Optional.of(unzip(buildReportsZipIs,
+                                    Files.createTempDirectory("build-reports-analyzer-action-" + jobName))));
+                        }
+                    } catch (IOException e) {
+                        LOG.error("Unable to extract build reports from archive " + buildReportsArchive, e);
+                    }
+                } else {
+                    try (Stream<Path> jobBuildReportsFilesStream = Files.walk(jobBuildReportsDirectory)) {
+                        jobBuildReportsFilesStream.forEach(p -> buildReportsBuilder.addPath(p));
 
-                    buildReportsMap.put(jobName, Optional.of(buildReportsBuilder.build()));
-                } catch (IOException e) {
-                    LOG.error("Unable to extract build reports from subdirectory " + jobBuildReportsDirectory, e);
+                        buildReportsMap.put(jobName, Optional.of(buildReportsBuilder.build()));
+                    } catch (IOException e) {
+                        LOG.error("Unable to extract build reports from subdirectory " + jobBuildReportsDirectory, e);
 
-                    buildReportsMap.put(jobName, Optional.empty());
+                        buildReportsMap.put(jobName, Optional.empty());
+                    }
                 }
             });
 
@@ -88,5 +105,53 @@ public class BuildReporterActionHandler {
 
             return Map.of();
         }
+    }
+
+    private BuildReports unzip(InputStream inputStream, Path jobDirectory) throws IOException {
+        BuildReports.Builder buildReportsBuilder = new BuildReports.Builder(jobDirectory);
+
+        try (final ZipInputStream zis = new ZipInputStream(inputStream)) {
+            final byte[] buffer = new byte[1024];
+            ZipEntry zipEntry = zis.getNextEntry();
+            while (zipEntry != null) {
+                final Path newPath = getZipEntryPath(jobDirectory, zipEntry);
+                final File newFile = newPath.toFile();
+
+                buildReportsBuilder.addPath(newPath);
+
+                if (zipEntry.isDirectory()) {
+                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                        throw new IOException("Failed to create directory " + newFile);
+                    }
+                } else {
+                    File parent = newFile.getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        throw new IOException("Failed to create directory " + parent);
+                    }
+
+                    final FileOutputStream fos = new FileOutputStream(newFile);
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+
+                    fos.close();
+                }
+                zipEntry = zis.getNextEntry();
+            }
+            zis.closeEntry();
+        }
+
+        return buildReportsBuilder.build();
+    }
+
+    private static Path getZipEntryPath(Path destinationDirectory, ZipEntry zipEntry) throws IOException {
+        Path destinationFile = destinationDirectory.resolve(zipEntry.getName());
+
+        if (!destinationFile.toAbsolutePath().startsWith(destinationDirectory.toAbsolutePath())) {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+        }
+
+        return destinationFile;
     }
 }

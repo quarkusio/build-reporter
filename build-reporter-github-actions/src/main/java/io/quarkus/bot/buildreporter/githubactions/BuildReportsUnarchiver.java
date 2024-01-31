@@ -26,7 +26,7 @@ class BuildReportsUnarchiver {
 
     private static final Logger LOG = Logger.getLogger(BuildReportsUnarchiver.class);
 
-    private static final String NESTED_ZIP_FILE_NAME = "build-reports.zip";
+    static final String NESTED_ZIP_FILE_NAME = "build-reports.zip";
 
     @Inject
     UrlShortener urlShortener;
