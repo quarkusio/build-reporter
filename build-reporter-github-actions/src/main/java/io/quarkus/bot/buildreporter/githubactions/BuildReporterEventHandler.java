@@ -133,7 +133,8 @@ public class BuildReporterEventHandler {
                 hideOutdatedWorkflowRunResults(buildReporterConfig, workflowContext, pullRequest,
                         workflow.getName(), gitHubGraphQLClient);
 
-                if (conclusion == Conclusion.SUCCESS && pullRequest.isDraft()) {
+                if ((conclusion == Conclusion.SUCCESS && pullRequest.isDraft())
+                        || conclusion == Conclusion.CANCELLED) {
                     return;
                 }
 
@@ -161,7 +162,7 @@ public class BuildReporterEventHandler {
                         workflowReport,
                         artifactsAvailable,
                         true,
-                        hasOtherPendingCheckRuns(pullRequest, buildReporterConfig));
+                        hasOtherPendingWorkflowRuns(pullRequest, buildReporterConfig));
 
                 if (reportCommentOptional.isEmpty()) {
                     return;
@@ -458,7 +459,7 @@ public class BuildReporterEventHandler {
         }
     }
 
-    private static boolean hasOtherPendingCheckRuns(GHPullRequest pullRequest, BuildReporterConfig buildReporterConfig) {
+    private static boolean hasOtherPendingWorkflowRuns(GHPullRequest pullRequest, BuildReporterConfig buildReporterConfig) {
         try {
             return pullRequest.getRepository().getCheckRuns(pullRequest.getHead().getSha()).toList().stream()
                     .anyMatch(cr -> cr.getStatus() == Status.QUEUED || cr.getStatus() == Status.IN_PROGRESS);
