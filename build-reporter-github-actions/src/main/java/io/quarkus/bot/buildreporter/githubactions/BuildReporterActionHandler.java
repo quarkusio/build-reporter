@@ -43,7 +43,10 @@ public class BuildReporterActionHandler {
         WorkflowContext workflowContext = new WorkflowContext(workflowRun);
         List<GHWorkflowJob> jobs = workflowRun.listJobs().toList()
                 .stream()
-                .filter(j -> j.getConclusion() != Conclusion.UNKNOWN && j.getConclusion() != Conclusion.ACTION_REQUIRED)
+                .filter(j -> j.getConclusion() != Conclusion.UNKNOWN &&
+                        j.getConclusion() != Conclusion.ACTION_REQUIRED &&
+                        j.getConclusion() != Conclusion.NEUTRAL &&
+                        j.getConclusion() != Conclusion.STALE)
                 .sorted(buildReporterConfig.getJobNameComparator())
                 .collect(Collectors.toList());
 
