@@ -18,18 +18,20 @@ public class WorkflowReportFormatter {
                 .render();
     }
 
-    public String getCheckRunReport(WorkflowReport report, boolean includeStackTraces, boolean includeFailureLinks) {
-        return Templates.checkRunReport(report, includeStackTraces, includeFailureLinks).render();
+    public String getCheckRunReport(WorkflowReport report, boolean develocityEnabled, String develocityUrl,
+            boolean includeStackTraces, boolean includeFailureLinks) {
+        return Templates.checkRunReport(report, develocityEnabled, develocityUrl, includeStackTraces, includeFailureLinks)
+                .render();
     }
 
     public String getReportComment(WorkflowReport report, boolean artifactsAvailable, GHCheckRun checkRun,
             String messageIdActive, String workflowRunId, String buildScansCheckRunMarker,
-            boolean develocityEnabled, boolean indicateSuccess, boolean hasOtherPendingCheckRuns,
+            boolean develocityEnabled, String develocityUrl, boolean indicateSuccess, boolean hasOtherPendingCheckRuns,
             boolean includeStackTraces, boolean includeFailureLinks,
             WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy) {
         return Templates
                 .commentReport(report, artifactsAvailable, checkRun, messageIdActive, workflowRunId, buildScansCheckRunMarker,
-                        develocityEnabled, indicateSuccess, hasOtherPendingCheckRuns,
+                        develocityEnabled, develocityUrl, indicateSuccess, hasOtherPendingCheckRuns,
                         includeStackTraces, includeFailureLinks, workflowReportJobIncludeStrategy)
                 .render();
     }
@@ -40,12 +42,13 @@ public class WorkflowReportFormatter {
         public static native TemplateInstance checkRunReportSummary(WorkflowReport report, WorkflowContext workflowContext,
                 boolean artifactsAvailable, WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy);
 
-        public static native TemplateInstance checkRunReport(WorkflowReport report, boolean includeStackTraces,
-                boolean includeFailureLinks);
+        public static native TemplateInstance checkRunReport(WorkflowReport report,
+                boolean develocityEnabled, String develocityUrl,
+                boolean includeStackTraces, boolean includeFailureLinks);
 
         public static native TemplateInstance commentReport(WorkflowReport report, boolean artifactsAvailable,
                 GHCheckRun checkRun, String messageIdActive, String workflowRunId, String buildScansCheckRunMarker,
-                boolean develocityEnabled, boolean indicateSuccess, boolean hasOtherPendingCheckRuns,
+                boolean develocityEnabled, String develocityUrl, boolean indicateSuccess, boolean hasOtherPendingCheckRuns,
                 boolean includeStackTraces, boolean includeFailureLinks,
                 WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy);
     }

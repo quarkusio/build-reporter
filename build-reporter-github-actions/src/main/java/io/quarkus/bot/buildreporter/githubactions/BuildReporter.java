@@ -64,6 +64,7 @@ public class BuildReporter {
                 workflowRunIdMarker,
                 WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                 buildReporterConfig.isDevelocityEnabled(),
+                buildReporterConfig.getDevelocityUrl(),
                 indicateSuccess,
                 hasOtherPendingCheckRuns,
                 true,
@@ -77,6 +78,7 @@ public class BuildReporter {
                     workflowRunIdMarker,
                     WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                     buildReporterConfig.isDevelocityEnabled(),
+                    buildReporterConfig.getDevelocityUrl(),
                     indicateSuccess,
                     hasOtherPendingCheckRuns,
                     false,
@@ -91,6 +93,22 @@ public class BuildReporter {
                     workflowRunIdMarker,
                     WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
                     buildReporterConfig.isDevelocityEnabled(),
+                    buildReporterConfig.getDevelocityUrl(),
+                    indicateSuccess,
+                    hasOtherPendingCheckRuns,
+                    false,
+                    false,
+                    workflowReportJobIncludeStrategy);
+        }
+        if (reportComment.length() > GITHUB_FIELD_LENGTH_HARD_LIMIT) {
+            reportComment = workflowReportFormatter.getReportComment(workflowReport,
+                    artifactsAvailable,
+                    checkRunOptional.orElse(null),
+                    statusCommentMarker,
+                    workflowRunIdMarker,
+                    WorkflowConstants.BUILD_SCANS_CHECK_RUN_MARKER,
+                    false,
+                    null,
                     indicateSuccess,
                     hasOtherPendingCheckRuns,
                     false,
@@ -112,12 +130,19 @@ public class BuildReporter {
             String name = WorkflowConstants.BUILD_SUMMARY_CHECK_RUN_PREFIX + workflowRun.getHeadSha();
             String summary = workflowReportFormatter.getCheckRunReportSummary(workflowReport, workflowContext,
                     artifactsAvailable, workflowReportJobIncludeStrategy);
-            String checkRunReport = workflowReportFormatter.getCheckRunReport(workflowReport, true, true);
+            String checkRunReport = workflowReportFormatter.getCheckRunReport(workflowReport,
+                    buildReporterConfig.isDevelocityEnabled(), buildReporterConfig.getDevelocityUrl(), true, true);
             if (checkRunReport.length() > GITHUB_FIELD_LENGTH_HARD_LIMIT) {
-                checkRunReport = workflowReportFormatter.getCheckRunReport(workflowReport, false, true);
+                checkRunReport = workflowReportFormatter.getCheckRunReport(workflowReport,
+                        buildReporterConfig.isDevelocityEnabled(), buildReporterConfig.getDevelocityUrl(), false, true);
             }
             if (checkRunReport.length() > GITHUB_FIELD_LENGTH_HARD_LIMIT) {
-                checkRunReport = workflowReportFormatter.getCheckRunReport(workflowReport, false, false);
+                checkRunReport = workflowReportFormatter.getCheckRunReport(workflowReport,
+                        buildReporterConfig.isDevelocityEnabled(), buildReporterConfig.getDevelocityUrl(), false, false);
+            }
+            if (checkRunReport.length() > GITHUB_FIELD_LENGTH_HARD_LIMIT) {
+                checkRunReport = workflowReportFormatter.getCheckRunReport(workflowReport,
+                        false, null, false, false);
             }
 
             Output checkRunOutput = new Output(name, summary).withText(checkRunReport);

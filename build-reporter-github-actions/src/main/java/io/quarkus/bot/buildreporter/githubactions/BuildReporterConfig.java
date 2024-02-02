@@ -13,14 +13,17 @@ public class BuildReporterConfig {
     private final Set<String> monitoredWorkflows;
     private final boolean createCheckRun;
     private final boolean develocityEnabled;
+    private final String develocityUrl;
 
     private BuildReporterConfig(boolean dryRun, Comparator<GHWorkflowJob> workflowJobComparator,
-            Set<String> monitoredWorkflows, boolean createCheckRun, boolean develocityEnabled) {
+            Set<String> monitoredWorkflows, boolean createCheckRun, boolean develocityEnabled,
+            String develocityUrl) {
         this.dryRun = dryRun;
         this.workflowJobComparator = workflowJobComparator;
         this.monitoredWorkflows = monitoredWorkflows;
         this.createCheckRun = createCheckRun;
         this.develocityEnabled = develocityEnabled;
+        this.develocityUrl = develocityUrl;
     }
 
     public boolean isDryRun() {
@@ -43,6 +46,10 @@ public class BuildReporterConfig {
         return develocityEnabled;
     }
 
+    public String getDevelocityUrl() {
+        return develocityUrl;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -54,6 +61,7 @@ public class BuildReporterConfig {
         private Comparator<GHWorkflowJob> workflowJobComparator = DefaultJobNameComparator.INSTANCE;
         private Set<String> monitoredWorkflows = Collections.emptySet();
         private boolean develocityEnabled;
+        private String develocityUrl;
 
         public Builder dryRun(boolean dryRun) {
             this.dryRun = dryRun;
@@ -80,9 +88,14 @@ public class BuildReporterConfig {
             return this;
         }
 
+        public Builder develocityUrl(String develocityUrl) {
+            this.develocityUrl = develocityUrl;
+            return this;
+        }
+
         public BuildReporterConfig build() {
             return new BuildReporterConfig(dryRun, workflowJobComparator, monitoredWorkflows, createCheckRun,
-                    develocityEnabled);
+                    develocityEnabled, develocityUrl);
         }
     }
 

@@ -10,6 +10,7 @@ public class WorkflowReportTestCase implements Comparable<WorkflowReportTestCase
     private final String classPath;
     private final String fullName;
     private final String fullClassName;
+    private final String name;
     private final String failureType;
     private final String failureErrorLine;
     private final String abbreviatedFailureDetail;
@@ -23,6 +24,7 @@ public class WorkflowReportTestCase implements Comparable<WorkflowReportTestCase
         this.classPath = classPath;
         this.fullName = reportTestCase.getFullName();
         this.fullClassName = reportTestCase.getFullClassName();
+        this.name = reportTestCase.getName();
         this.failureType = reportTestCase.getFailureType();
         this.failureErrorLine = reportTestCase.getFailureErrorLine();
         this.abbreviatedFailureDetail = abbreviatedFailureDetail;
@@ -41,6 +43,10 @@ public class WorkflowReportTestCase implements Comparable<WorkflowReportTestCase
 
     public String getFullClassName() {
         return fullClassName;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getFailureType() {
