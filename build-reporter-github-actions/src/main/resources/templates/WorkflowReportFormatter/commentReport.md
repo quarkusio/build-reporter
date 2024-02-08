@@ -88,7 +88,7 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 It should be safe to merge provided you have a look at the other checks in the summary.
 
 {#if hasOtherPendingCheckRuns}
-:warning: There are other check runs running, make sure you don't need to wait for their status before merging.
+:warning: There are other workflow runs running, you probably need to wait for their status before merging.
 
 {/if}
 {#if develocityEnabled}{buildScansCheckRunMarker}{/if}
