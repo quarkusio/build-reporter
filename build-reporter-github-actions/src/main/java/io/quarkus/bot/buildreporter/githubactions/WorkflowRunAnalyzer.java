@@ -196,11 +196,13 @@ public class WorkflowRunAnalyzer {
                                     rtc,
                                     Stream.concat(
                                             rtc.getFlakyErrors().stream()
-                                                    .map(fe -> new WorkflowReportFlakyTestCase.Flake(fe.getMessage(),
+                                                    .map(fe -> new WorkflowReportFlakyTestCase.Flake(
+                                                            stackTraceShortener.shorten(fe.getMessage(), 1000, 5),
                                                             fe.getType(), fe.getStackTrace(),
                                                             stackTraceShortener.shorten(fe.getStackTrace(), 1000, 8))),
                                             rtc.getFlakyFailures().stream()
-                                                    .map(fe -> new WorkflowReportFlakyTestCase.Flake(fe.getMessage(),
+                                                    .map(fe -> new WorkflowReportFlakyTestCase.Flake(
+                                                            stackTraceShortener.shorten(fe.getMessage(), 1000, 5),
                                                             fe.getType(), fe.getStackTrace(),
                                                             stackTraceShortener.shorten(fe.getStackTrace(), 1000, 8))))
                                             .collect(Collectors.toList())))
