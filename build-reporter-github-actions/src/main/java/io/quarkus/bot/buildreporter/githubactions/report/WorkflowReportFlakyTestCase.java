@@ -13,12 +13,14 @@ public class WorkflowReportFlakyTestCase implements Comparable<WorkflowReportFla
     private final String classPath;
     private final String fullName;
     private final String fullClassName;
+    private final String name;
     private final List<Flake> flakes;
 
     public WorkflowReportFlakyTestCase(String classPath, ReportTestCase reportTestCase, List<Flake> flakes) {
         this.classPath = classPath;
         this.fullName = reportTestCase.getFullName();
         this.fullClassName = reportTestCase.getFullClassName();
+        this.name = reportTestCase.getName();
         this.flakes = Collections.unmodifiableList(flakes);
     }
 
@@ -32,6 +34,10 @@ public class WorkflowReportFlakyTestCase implements Comparable<WorkflowReportFla
 
     public String getFullClassName() {
         return fullClassName;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public List<Flake> getFlakes() {

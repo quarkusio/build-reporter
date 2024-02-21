@@ -26,7 +26,7 @@
 ```
 
 {#for failure : module.testFailures}
-<p>✖ <code>{failure.fullName}</code>{#if failure.failureErrorLine} line <code>{failure.failureErrorLine}</code>{/if}{#if includeFailureLinks} <a id="test-failure-{failure.fullClassName.toLowerCase}-{failure_count}"></a> - <a href="{failure.shortenedFailureUrl}">Source on GitHub</a> - <a href="#user-content-build-summary-top">🠅</a>{/if}</p>
+<p>✖ <code>{failure.fullName}</code>{#if failure.failureErrorLine} line <code>{failure.failureErrorLine}</code>{/if}{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={failure.fullClassName}&tests.test={failure.name}">History</a>{/if}{#if includeFailureLinks} <a id="test-failure-{failure.fullClassName.toLowerCase}-{failure_count}"></a> - <a href="{failure.shortenedFailureUrl}">Source on GitHub</a> - <a href="#user-content-build-summary-top">🠅</a>{/if}</p>
 
 {#if (failure.abbreviatedFailureDetail && includeStackTraces) || (report.sameRepository && failure.failureErrorLine)}
 <details>
@@ -60,7 +60,7 @@
 {/for}
 
 {#if report.flakyTests}
-## Flaky tests
+## Flaky tests{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests">Develocity</a>{/if}
 
 {#for job in report.jobsWithFlakyTests}
 ### :gear: {job.name}
@@ -69,7 +69,7 @@
 #### :package: {module.name ? module.name : "Root project"}
 
 {#for flakyTest : module.flakyTests}
-<p>✖ <code>{flakyTest.fullName}</code></p>
+<p>✖ <code>{flakyTest.fullName}</code>{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={flakyTest.fullClassName}&tests.test={flakyTest.name}">History</a>{/if}</p>
 
 {#for flake : flakyTest.flakes}
 - `{flake.message}`{#if flake.type} - <code>{flake.type}</code>{/if}
