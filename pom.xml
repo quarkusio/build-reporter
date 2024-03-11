@@ -19,7 +19,7 @@
 
         <maven-core.version>3.9.6</maven-core.version>
         <plexus-containers.version>2.2.0</plexus-containers.version>
-        <jackson-databind.version>2.16.1</jackson-databind.version>
+        <jackson-databind.version>2.16.2</jackson-databind.version>
 
         <quarkus.version>3.7.3</quarkus.version>
         <quarkus-github-app.version>2.3.0</quarkus-github-app.version>
