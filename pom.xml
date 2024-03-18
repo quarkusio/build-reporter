@@ -22,7 +22,7 @@
         <jackson-databind.version>2.16.1</jackson-databind.version>
 
         <quarkus.version>3.7.3</quarkus.version>
-        <quarkus-github-app.version>2.3.0</quarkus-github-app.version>
+        <quarkus-github-app.version>2.3.3</quarkus-github-app.version>
         <jandex-maven-plugin.version>3.1.6</jandex-maven-plugin.version>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
     </properties>
