@@ -82,6 +82,64 @@ and the monitored workflows from the configuration file hosted in the repository
 
 It is important to listen to both the `@WorkflowRun.Completed` and the `@WorkflowRun.Requested` events.
 
+That is all for the GitHub App part.
+You also need to upload the reports as artifacts of the workflow run in your GitHub Action workflow file.
+
+For instance, to upload the build reports of a job named `JVM Tests - JDK ${{matrix.java.name}}`, you would use:
+
+```yaml
+      - name: Upload build reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "build-reports-JVM Tests - JDK ${{matrix.java.name}}"
+          path: |
+            **/target/*-reports/TEST-*.xml
+            target/build-report.json
+            LICENSE
+          retention-days: 7
+```
+
+Note that the name of the artifact is important:
+
+- It must start with `build-reports-`
+- Then include the exact job name - the job name must be used, not the job id (the job id is not available in the payloads so we cannot map reports to jobs with the job id)
+
+The artifact may never be empty so include a file that will always be present (e.g. the `LICENSE` file).
+
+In the unfortunate case when the paths of the files you want to upload contain characters not supported by `upload-artifact`,
+you can create an archive and push the archive instead:
+
+```yaml
+      - name: Prepare build reports archive
+        if: always()
+        run: |
+          7z a -tzip build-reports.zip -r \
+              '**/target/*-reports/TEST-*.xml' \
+              'target/build-report.json' \
+              'target/gradle-build-scan-url.txt' \
+              LICENSE.txt
+      - name: Upload build reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "build-reports-JVM Tests - JDK ${{matrix.java.name}}"
+          path: |
+            build-reports.zip
+          retention-days: 7
+```
+
+The Build Reporter will automatically unarchive the reports before analyzing them.
+
+## Using the GitHub Action
+
+You might not have the ability to set up a GitHub App,
+or you might want to also provide build reports on forks.
+
+For these use cases, we also offer a GitHub Action that can be used directly in your workflows.
+
+See [https://github.com/quarkusio/action-build-reporter/](Action Build Reporter) for more information.
+
 ## Releasing
 
 ```
