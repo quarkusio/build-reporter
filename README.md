@@ -138,7 +138,7 @@ or you might want to also provide build reports on forks.
 
 For these use cases, we also offer a GitHub Action that can be used directly in your workflows.
 
-See [https://github.com/quarkusio/action-build-reporter/](Action Build Reporter) for more information.
+See [Action Build Reporter](https://github.com/quarkusio/action-build-reporter/) for more information.
 
 ## Releasing
 
