@@ -19,6 +19,10 @@ public final class WorkflowUtils {
         return String.format(WorkflowConstants.MESSAGE_ID_HIDDEN_FOR_WORKFLOW, workflowName);
     }
 
+    public static String getOldActiveStatusCommentMarker(String workflowName) {
+        return String.format(WorkflowConstants.OLD_MESSAGE_ID_ACTIVE_FOR_WORKFLOW, workflowName);
+    }
+
     private WorkflowUtils() {
     }
 }

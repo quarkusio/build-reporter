@@ -2,6 +2,7 @@ package io.quarkus.bot.buildreporter.githubactions;
 
 import static io.quarkus.bot.buildreporter.githubactions.WorkflowUtils.getActiveStatusCommentMarker;
 import static io.quarkus.bot.buildreporter.githubactions.WorkflowUtils.getHiddenStatusCommentMarker;
+import static io.quarkus.bot.buildreporter.githubactions.WorkflowUtils.getOldActiveStatusCommentMarker;
 
 import java.io.File;
 import java.io.IOException;
@@ -393,20 +394,19 @@ public class BuildReporterEventHandler {
         List<GHIssueComment> comments = issue.getComments();
 
         for (GHIssueComment comment : comments) {
-            if (!comment.getBody().contains(WorkflowConstants.MESSAGE_ID_ACTIVE) &&
-                    !comment.getBody().contains(getActiveStatusCommentMarker(workflowName))) {
+            boolean noOldMarkersFound = !comment.getBody().contains(WorkflowConstants.OLD_MESSAGE_ID_ACTIVE) &&
+                    !comment.getBody().contains(getOldActiveStatusCommentMarker(workflowName));
+            if ((!comment.getBody().contains(WorkflowConstants.MESSAGE_ID_ACTIVE) &&
+                    !comment.getBody().contains(getActiveStatusCommentMarker(workflowName))) &&
+                    noOldMarkersFound) {
                 continue;
             }
 
-            StringBuilder updatedComment = new StringBuilder();
-            updatedComment.append(WorkflowConstants.HIDE_MESSAGE_PREFIX);
-            updatedComment.append(comment.getBody().replace(getActiveStatusCommentMarker(workflowName),
-                    getHiddenStatusCommentMarker(workflowName))
-                    .replace(WorkflowConstants.MESSAGE_ID_ACTIVE, getHiddenStatusCommentMarker(workflowName)));
+            String updatedComment = getUpdatedComment(workflowName, comment);
 
             if (!buildReporterConfig.isDryRun()) {
                 try {
-                    comment.update(updatedComment.toString());
+                    comment.update(updatedComment);
                 } catch (IOException e) {
                     LOG.error(workflowContext.getLogContext() +
                             " - Unable to hide outdated workflow run status for comment " + comment.getId());
@@ -421,6 +421,22 @@ public class BuildReporterEventHandler {
                 LOG.info(workflowContext.getLogContext() + " - Hide outdated workflow run status " + comment.getId());
             }
         }
+    }
+
+    private static String getUpdatedComment(String workflowName, GHIssueComment comment) {
+        StringBuilder updatedComment = new StringBuilder();
+        updatedComment.append(WorkflowConstants.HIDE_MESSAGE_PREFIX);
+        // Replace old markers with new ones for compatibility reasons
+        if (comment.getBody().contains(getOldActiveStatusCommentMarker(workflowName))) {
+            updatedComment.append(comment.getBody().replace(getOldActiveStatusCommentMarker(workflowName),
+                    getHiddenStatusCommentMarker(workflowName))
+                    .replace(WorkflowConstants.OLD_MESSAGE_ID_ACTIVE, getHiddenStatusCommentMarker(workflowName)));
+        } else {
+            updatedComment.append(comment.getBody().replace(getActiveStatusCommentMarker(workflowName),
+                    getHiddenStatusCommentMarker(workflowName))
+                    .replace(WorkflowConstants.MESSAGE_ID_ACTIVE, getHiddenStatusCommentMarker(workflowName)));
+        }
+        return updatedComment.toString();
     }
 
     private static void minimizeOutdatedComment(DynamicGraphQLClient gitHubGraphQLClient, GHIssueComment comment)
