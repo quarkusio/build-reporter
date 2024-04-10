@@ -17,12 +17,15 @@ public class WorkflowConstants {
     public static final String MESSAGE_ID_HIDDEN_FOR_WORKFLOW = "<!-- Build-Reporter/msg-id:workflow-run-status-hidden:%1$s -->";
     public static final String WORKFLOW_RUN_ID_MARKER = "<!-- Build-Reporter/workflow-run-id:%1$s -->";
     public static final String BUILD_SCANS_CHECK_RUN_MARKER = "<!-- Build-Reporter/build-scans-check-run -->";
-    public static final String OLD_MESSAGE_ID_ACTIVE = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-active -->";
-    public static final String OLD_MESSAGE_ID_ACTIVE_FOR_WORKFLOW = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-active:%1$s -->";
     public static final String HIDE_MESSAGE_PREFIX = """
             ---
             > :waning_crescent_moon: **_This workflow status is outdated as a new workflow run has been triggered._**
             ---
 
             """;
+
+    @Deprecated(forRemoval = true, since = "3.7.0")
+    public static final String OLD_MESSAGE_ID_ACTIVE = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-active -->";
+    @Deprecated(forRemoval = true, since = "3.7.0")
+    public static final String OLD_MESSAGE_ID_ACTIVE_FOR_WORKFLOW = "<!-- Quarkus-GitHub-Bot/msg-id:workflow-run-status-active:%1$s -->";
 }
