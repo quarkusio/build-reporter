@@ -1,7 +1,15 @@
 ## Test Failures
 
-{#if !includeStackTraces}:warning: Unable to include the stracktraces as the report was too long. See annotations below for the details.{/if}
-{#if !includeFailureLinks}:warning: Unable to include the failure links as the report was too long. See annotations below for the details.{/if}
+{#if !includeStackTraces}
+> [!WARNING]
+> Unable to include the stracktraces as the report was too long. See annotations below for the details.
+
+{/if}
+{#if !includeFailureLinks}
+> [!WARNING]
+> Unable to include the failure links as the report was too long. See annotations below for the details.
+
+{/if}
 
 {#for job in report.jobsWithReportedFailures}
 ### :gear: {job.name} {#if job.reportedFailures}<a href="#user-content-{job.failuresAnchor}" id="{job.failuresAnchor}">#</a>{/if}
