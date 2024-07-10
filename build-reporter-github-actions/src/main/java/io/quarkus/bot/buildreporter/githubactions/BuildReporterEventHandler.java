@@ -108,7 +108,8 @@ public class BuildReporterEventHandler {
             artifactsAvailable = true;
         } catch (ConditionTimeoutException e) {
             if (workflowRun.getConclusion() != Conclusion.CANCELLED) {
-                LOG.warn("Workflow run #" + workflowRun.getId()
+                LOG.warn("Workflow run " + workflowRun.getRepository().getFullName() + "#"
+                        + workflowRun.getName() + ":" + workflowRun.getId()
                         + " - Unable to get the artifacts in a timely manner, ignoring them");
             }
             artifacts = Collections.emptyList();
