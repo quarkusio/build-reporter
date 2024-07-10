@@ -3,16 +3,27 @@
 This is the status report for running `{report.workflowName}` on commit {report.sha}.
 
 {#if report.cancelled}
-:no_entry_sign: This workflow run has been cancelled.
+> [!NOTE]
+> :no_entry_sign: This build has been cancelled.
 
 {/if}
 
-{#if !includeStackTraces}:warning: Unable to include the stracktraces as the report was too long. See annotations below for the details.{/if}
-{#if !includeFailureLinks}:warning: Unable to include the failure links as the report was too long. See annotations below for the details.{/if}
+{#if !includeStackTraces}
+> [!WARNING]
+> Unable to include the stracktraces as the report was too long. See annotations below for the details.
+
+{/if}
+{#if !includeFailureLinks}
+> [!WARNING]
+> Unable to include the failure links as the report was too long. See annotations below for the details.
+
+{/if}
 
 {#if report.failure}
 {#if !report.jobsFailing}
-✖ This workflow run has failed but no jobs reported an error. Something weird happened, please check [the workflow run page]({report.workflowRunUrl}) carefully: it might be an issue with the workflow configuration itself.
+> [!CAUTION]
+> This workflow run has failed but no jobs reported an error. Something weird happened, please check [the workflow run page]({report.workflowRunUrl}) carefully: it might be an issue with the workflow configuration itself.
+
 {#else}
 ## Failing Jobs
 
@@ -33,7 +44,8 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 {#if develocityEnabled}{buildScansCheckRunMarker}{/if}
 
 {#if report.errorDownloadingBuildReports}
-:warning: Errors occurred while downloading the build reports. This report is incomplete.
+> [!WARNING]
+> Errors occurred while downloading the build reports. This report is incomplete.
 {/if}
 
 {#if report.reportedFailures}
@@ -88,7 +100,8 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 It should be safe to merge provided you have a look at the other checks in the summary.
 
 {#if hasOtherPendingCheckRuns}
-:warning: There are other workflow runs running, you probably need to wait for their status before merging.
+> [!WARNING]
+> There are other workflow runs running, you probably need to wait for their status before merging.
 
 {/if}
 {#if develocityEnabled}{buildScansCheckRunMarker}{/if}
