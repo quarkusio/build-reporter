@@ -143,6 +143,5 @@ See [Action Build Reporter](https://github.com/quarkusio/action-build-reporter/)
 ## Releasing
 
 ```
-mvn release:prepare
-mvn release:perform -Darguments=-DperformRelease -Prelease
+mvn release:prepare release:perform -Darguments=-DperformRelease -Prelease
 ```
