@@ -38,7 +38,8 @@ public class BuildReporterActionHandler {
 
     public Optional<String> generateReport(String workflowName, GHWorkflowRun workflowRun, Path buildReportsArtifactsPath,
             BuildReporterConfig buildReporterConfig) throws IOException {
-        Map<String, Optional<BuildReports>> buildReportsMap = prepareBuildReportMap(buildReportsArtifactsPath);
+        Map<String, Optional<BuildReports>> buildReportsMap = prepareBuildReportMap(buildReportsArtifactsPath,
+                workflowRun.getRunAttempt());
 
         WorkflowContext workflowContext = new WorkflowContext(workflowRun);
         List<GHWorkflowJob> jobs = workflowRun.listJobs().toList()
@@ -63,19 +64,31 @@ public class BuildReporterActionHandler {
                 workflowReportOptional.get(), true, false, false);
     }
 
-    private Map<String, Optional<BuildReports>> prepareBuildReportMap(Path buildReportsArtifactsPath) {
+    private Map<String, Optional<BuildReports>> prepareBuildReportMap(Path buildReportsArtifactsPath, long runAttempt) {
         if (!Files.exists(buildReportsArtifactsPath) || !Files.isDirectory(buildReportsArtifactsPath)) {
             return Map.of();
         }
 
+        boolean useNewBuildReportsArtifactNamePattern = false;
+        try (Stream<Path> jobBuildReportsDirectoriesStream = Files.list(buildReportsArtifactsPath).filter(Files::isDirectory)) {
+            useNewBuildReportsArtifactNamePattern = jobBuildReportsDirectoriesStream
+                    .anyMatch(d -> WorkflowUtils.matchesNewBuildReportsArtifactNamePattern(d.getFileName().toString()));
+        } catch (IOException e) {
+            LOG.error("Unable to extract build reports from directory " + buildReportsArtifactsPath, e);
+            return Map.of();
+        }
+
         Map<String, Optional<BuildReports>> buildReportsMap = new HashMap<>();
+        String buildReportsArtifactPrefix = useNewBuildReportsArtifactNamePattern
+                ? WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX + runAttempt + "-"
+                : WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX;
 
         try (Stream<Path> jobBuildReportsDirectoriesStream = Files.list(buildReportsArtifactsPath).filter(Files::isDirectory)
-                .filter(d -> d.getFileName().toString().startsWith(WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX))) {
+                .filter(d -> d.getFileName().toString().startsWith(buildReportsArtifactPrefix))) {
 
             jobBuildReportsDirectoriesStream.forEach(jobBuildReportsDirectory -> {
                 String jobName = jobBuildReportsDirectory.getFileName().toString()
-                        .replace(WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX, "");
+                        .replace(buildReportsArtifactPrefix, "");
 
                 BuildReports.Builder buildReportsBuilder = new BuildReports.Builder(jobBuildReportsDirectory);
 

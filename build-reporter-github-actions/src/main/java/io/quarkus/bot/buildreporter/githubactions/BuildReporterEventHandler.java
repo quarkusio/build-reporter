@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -142,7 +143,7 @@ public class BuildReporterEventHandler {
 
                 Map<String, Optional<BuildReports>> buildReportsMap = downloadBuildReports(workflowContext,
                         allBuildReportsDirectory,
-                        artifacts, artifactsAvailable);
+                        artifacts, artifactsAvailable, workflowRun.getRunAttempt());
                 List<GHWorkflowJob> jobs = workflowRun.listJobs().toList()
                         .stream()
                         .sorted(buildReporterConfig.getJobNameComparator())
@@ -225,7 +226,7 @@ public class BuildReporterEventHandler {
 
                 Map<String, Optional<BuildReports>> buildReportsMap = downloadBuildReports(workflowContext,
                         allBuildReportsDirectory,
-                        artifacts, artifactsAvailable);
+                        artifacts, artifactsAvailable, workflowRun.getRunAttempt());
 
                 List<GHWorkflowJob> jobs = workflowRun.listJobs().toList()
                         .stream()
@@ -337,22 +338,20 @@ public class BuildReporterEventHandler {
 
     private Map<String, Optional<BuildReports>> downloadBuildReports(WorkflowContext workflowContext,
             Path allBuildReportsDirectory,
-            List<GHArtifact> artifacts, boolean artifactsAvailable) throws IOException {
+            List<GHArtifact> artifacts, boolean artifactsAvailable, long runAttempt) throws IOException {
         if (!artifactsAvailable) {
             return Collections.emptyMap();
         }
 
+        Map<String, GHArtifact> buildReportsArtifacts = WorkflowUtils.getBuildReportsArtifacts(artifacts, runAttempt);
+
         Map<String, Optional<BuildReports>> buildReportsMap = new HashMap<>();
-
-        List<GHArtifact> buildReportsArtifacts = artifacts
-                .stream()
-                .filter(a -> a.getName().startsWith(WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX))
-                .sorted((a1, a2) -> a1.getName().compareTo(a2.getName()))
-                .collect(Collectors.toList());
-
         Set<String> alreadyHandledArtifacts = new HashSet<>();
 
-        for (GHArtifact artifact : buildReportsArtifacts) {
+        for (Entry<String, GHArtifact> artifactEntry : buildReportsArtifacts.entrySet()) {
+            String jobName = artifactEntry.getKey();
+            GHArtifact artifact = artifactEntry.getValue();
+
             if (alreadyHandledArtifacts.contains(artifact.getName())) {
                 continue;
             }
@@ -362,8 +361,7 @@ public class BuildReporterEventHandler {
             Optional<BuildReports> buildReportsOptional = buildReportsUnarchiver.getBuildReports(workflowContext,
                     artifact, jobDirectory);
 
-            buildReportsMap.put(artifact.getName().replace(WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX, ""),
-                    buildReportsOptional);
+            buildReportsMap.put(jobName, buildReportsOptional);
 
             alreadyHandledArtifacts.add(artifact.getName());
         }
@@ -468,7 +466,15 @@ public class BuildReporterEventHandler {
         @Override
         public Boolean call() throws Exception {
             artifacts = workflowRun.listArtifacts().toList();
-            return !artifacts.isEmpty();
+
+            boolean useNewBuildReportsArtifactNamePattern = artifacts.stream()
+                    .anyMatch(a -> WorkflowUtils.matchesNewBuildReportsArtifactNamePattern(a.getName()));
+
+            String buildReportsArtifactNamePrefix = useNewBuildReportsArtifactNamePattern
+                    ? WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX + workflowRun.getRunAttempt() + "-"
+                    : WorkflowConstants.BUILD_REPORTS_ARTIFACT_PREFIX;
+
+            return artifacts.stream().anyMatch(a -> a.getName().startsWith(buildReportsArtifactNamePrefix));
         }
 
         public List<GHArtifact> getArtifacts() {
