@@ -7,6 +7,7 @@ import org.kohsuke.github.GHCheckRun;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReport;
 import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportJobIncludeStrategy;
 import io.quarkus.qute.CheckedTemplate;
+import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 
 @ApplicationScoped
@@ -51,5 +52,20 @@ public class WorkflowReportFormatter {
                 boolean develocityEnabled, String develocityUrl, boolean indicateSuccess, boolean hasOtherPendingCheckRuns,
                 boolean includeStackTraces, boolean includeFailureLinks,
                 WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy);
+    }
+
+    @TemplateExtension
+    public class TemplateExtensions {
+
+        /**
+         * This is very naive and just designed to not break the markdown.
+         */
+        public static String escapeHtml(String html) {
+            if (html == null || html.isBlank()) {
+                return html;
+            }
+
+            return html.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        }
     }
 }
