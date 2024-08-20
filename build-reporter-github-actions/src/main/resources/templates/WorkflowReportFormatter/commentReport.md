@@ -66,7 +66,7 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 
 {#if module.testFailures}
 {#for failure : module.testFailures}
-<p>✖ <code>{failure.fullName}</code>{#if failure.failureErrorLine} line <code>{failure.failureErrorLine}</code>{/if}{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={failure.fullClassName}&tests.test={failure.name}">History</a>{/if}{#if includeFailureLinks} - {#if checkRun && failure.failureDetail}<a href="{checkRun.htmlUrl}#user-content-test-failure-{failure.fullClassName.toLowerCase}-{failure_count}">More details</a> - {/if}<a href="{failure.shortenedFailureUrl}">Source on GitHub</a>{/if}</p>
+<p>✖ <code>{failure.fullName.escapeHtml}</code>{#if failure.failureErrorLine} line <code>{failure.failureErrorLine}</code>{/if}{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={failure.fullClassName}&tests.test={failure.name}">History</a>{/if}{#if includeFailureLinks} - {#if checkRun && failure.failureDetail}<a href="{checkRun.htmlUrl}#user-content-test-failure-{failure.fullClassName.toLowerCase}-{failure_count}">More details</a> - {/if}<a href="{failure.shortenedFailureUrl}">Source on GitHub</a>{/if}</p>
 
 {#if failure.abbreviatedFailureDetail && includeStackTraces}
 <details>
@@ -80,7 +80,7 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 
 {/for}
 {#else if module.projectReportFailure}
-<p>✖ <code>{module.projectReportFailure}</code></p>
+<p>✖ <code>{module.projectReportFailure.escapeHtml}</code></p>
 
 {#else}
 <p>We were unable to extract a useful error message.</p>
@@ -120,10 +120,10 @@ It should be safe to merge provided you have a look at the other checks in the s
 #### :package: {module.name ? module.name : "Root project"}
 
 {#for flakyTest : module.flakyTests}
-<p>✖ <code>{flakyTest.fullName}</code>{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={flakyTest.fullClassName}&tests.test={flakyTest.name}">History</a>{/if}</p>
+<p>✖ <code>{flakyTest.fullName.escapeHtml}</code>{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={flakyTest.fullClassName}&tests.test={flakyTest.name}">History</a>{/if}</p>
 
 {#for flake : flakyTest.flakes}
-- `{flake.message}`{#if flake.type} - <code>{flake.type}</code>{/if}
+- `{flake.message}`{#if flake.type} - `{flake.type}`{/if}
 
 {#if flake.abbreviatedStackTrace.trim && includeStackTraces}
 <details>
