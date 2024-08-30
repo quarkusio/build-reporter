@@ -65,7 +65,9 @@ public class WorkflowReportFormatter {
                 return html;
             }
 
-            return html.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+            return html.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    .replace("#", "\\#")
+                    .replace("*", "\\*");
         }
     }
 }
