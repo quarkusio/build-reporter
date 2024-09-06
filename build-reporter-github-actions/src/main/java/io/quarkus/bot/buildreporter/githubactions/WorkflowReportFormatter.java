@@ -72,6 +72,10 @@ public class WorkflowReportFormatter {
          * Again very naive but should catch most issues.
          */
         public static String escapeMarkdown(String markdown) {
+            if (markdown == null || markdown.isBlank()) {
+                return markdown;
+            }
+
             return markdown.replace("#", "\\#")
                     .replace("*", "\\*")
                     .replace("`", "\\`");
