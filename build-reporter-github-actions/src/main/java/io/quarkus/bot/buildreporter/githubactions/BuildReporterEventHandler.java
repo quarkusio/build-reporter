@@ -173,6 +173,11 @@ public class BuildReporterEventHandler {
 
                 String reportComment = reportCommentOptional.get();
 
+                if (pullRequest.isDraft()) {
+                    // if pull request has been marked draft while analyzing the report, let's not add the comment
+                    return;
+                }
+
                 if (!buildReporterConfig.isDryRun()) {
                     pullRequest.comment(reportComment);
                 } else {
