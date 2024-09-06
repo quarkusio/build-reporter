@@ -67,5 +67,14 @@ public class WorkflowReportFormatter {
 
             return html.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
         }
+
+        /**
+         * Again very naive but should catch most issues.
+         */
+        public static String escapeMarkdown(String markdown) {
+            return markdown.replace("#", "\\#")
+                    .replace("*", "\\*")
+                    .replace("`", "\\`");
+        }
     }
 }
