@@ -8,7 +8,7 @@
     <groupId>io.quarkus.bot</groupId>
     <artifactId>build-reporter-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.9.4-SNAPSHOT</version>
+    <version>3.9.4</version>
     <name>Build Reporter - Parent</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -124,7 +124,7 @@
         <url>https://github.com/quarkusio/build-reporter</url>
         <connection>scm:git:git@github.com:quarkusio/build-reporter.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/build-reporter.git</developerConnection>
-        <tag>3.3.0</tag>
+        <tag>3.9.4</tag>
     </scm>
 
     <issueManagement>
