@@ -36,7 +36,7 @@ public class BuildReporter {
     WorkflowReportFormatter workflowReportFormatter;
 
     @Inject
-    WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy;
+    WorkflowReportJobIncludeStrategy globalWorkflowReportJobIncludeStrategy;
 
     @Inject
     StackTraceShortener stackTraceShortener;
@@ -56,6 +56,10 @@ public class BuildReporter {
         String workflowRunIdMarker = String.format(WorkflowConstants.WORKFLOW_RUN_ID_MARKER, workflowRun.getId());
         String statusCommentMarker = workflowName == null ? WorkflowConstants.MESSAGE_ID_ACTIVE
                 : getActiveStatusCommentMarker(workflowName);
+
+        WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy = buildReporterConfig
+                .getWorkflowReportJobIncludeStrategy() != null ? buildReporterConfig.getWorkflowReportJobIncludeStrategy()
+                        : globalWorkflowReportJobIncludeStrategy;
 
         String reportComment = workflowReportFormatter.getReportComment(workflowReport,
                 artifactsAvailable,
@@ -125,6 +129,10 @@ public class BuildReporter {
         if (!workflowReport.hasTestFailures() || buildReporterConfig.isDryRun() || !buildReporterConfig.isCreateCheckRun()) {
             return Optional.empty();
         }
+
+        WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy = buildReporterConfig
+                .getWorkflowReportJobIncludeStrategy() != null ? buildReporterConfig.getWorkflowReportJobIncludeStrategy()
+                        : globalWorkflowReportJobIncludeStrategy;
 
         try {
             String name = WorkflowConstants.BUILD_SUMMARY_CHECK_RUN_PREFIX + workflowRun.getHeadSha();
