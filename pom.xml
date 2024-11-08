@@ -23,7 +23,7 @@
 
         <quarkus.version>3.16.2</quarkus.version>
         <quarkus-github-app.version>2.7.0</quarkus-github-app.version>
-        <jandex-maven-plugin.version>3.2.0</jandex-maven-plugin.version>
+        <jandex-maven-plugin.version>3.2.3</jandex-maven-plugin.version>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
     </properties>
     <dependencyManagement>
