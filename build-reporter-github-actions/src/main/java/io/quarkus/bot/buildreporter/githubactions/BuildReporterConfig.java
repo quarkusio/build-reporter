@@ -6,19 +6,24 @@ import java.util.Set;
 
 import org.kohsuke.github.GHWorkflowJob;
 
+import io.quarkus.bot.buildreporter.githubactions.report.WorkflowReportJobIncludeStrategy;
+
 public class BuildReporterConfig {
 
     private final boolean dryRun;
+    private final WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy;
     private final Comparator<GHWorkflowJob> workflowJobComparator;
     private final Set<String> monitoredWorkflows;
     private final boolean createCheckRun;
     private final boolean develocityEnabled;
     private final String develocityUrl;
 
-    private BuildReporterConfig(boolean dryRun, Comparator<GHWorkflowJob> workflowJobComparator,
+    private BuildReporterConfig(boolean dryRun, WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy,
+            Comparator<GHWorkflowJob> workflowJobComparator,
             Set<String> monitoredWorkflows, boolean createCheckRun, boolean develocityEnabled,
             String develocityUrl) {
         this.dryRun = dryRun;
+        this.workflowReportJobIncludeStrategy = workflowReportJobIncludeStrategy;
         this.workflowJobComparator = workflowJobComparator;
         this.monitoredWorkflows = monitoredWorkflows;
         this.createCheckRun = createCheckRun;
@@ -28,6 +33,10 @@ public class BuildReporterConfig {
 
     public boolean isDryRun() {
         return dryRun;
+    }
+
+    public WorkflowReportJobIncludeStrategy getWorkflowReportJobIncludeStrategy() {
+        return workflowReportJobIncludeStrategy;
     }
 
     public Comparator<GHWorkflowJob> getJobNameComparator() {
@@ -58,13 +67,19 @@ public class BuildReporterConfig {
 
         private boolean dryRun = false;
         private boolean createCheckRun = true;
-        private Comparator<GHWorkflowJob> workflowJobComparator = DefaultJobNameComparator.INSTANCE;
+        private WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy;
+        private Comparator<GHWorkflowJob> workflowJobComparator;
         private Set<String> monitoredWorkflows = Collections.emptySet();
         private boolean develocityEnabled;
         private String develocityUrl;
 
         public Builder dryRun(boolean dryRun) {
             this.dryRun = dryRun;
+            return this;
+        }
+
+        public Builder workflowReportJobIncludeStrategy(WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy) {
+            this.workflowReportJobIncludeStrategy = workflowReportJobIncludeStrategy;
             return this;
         }
 
@@ -94,8 +109,9 @@ public class BuildReporterConfig {
         }
 
         public BuildReporterConfig build() {
-            return new BuildReporterConfig(dryRun, workflowJobComparator, monitoredWorkflows, createCheckRun,
-                    develocityEnabled, develocityUrl);
+            return new BuildReporterConfig(dryRun, workflowReportJobIncludeStrategy,
+                    workflowJobComparator != null ? workflowJobComparator : DefaultJobNameComparator.INSTANCE,
+                    monitoredWorkflows, createCheckRun, develocityEnabled, develocityUrl);
         }
     }
 
