@@ -138,7 +138,12 @@ class BuildReports {
 
         @Override
         public String getModuleName(Path jobDirectory) {
-            return jobDirectory.relativize(path).getParent().getParent().toString();
+            Path modulePath = jobDirectory.relativize(path).getParent().getParent();
+            if (modulePath == null) {
+                return null;
+            }
+
+            return modulePath.toString();
         }
 
         @Override
@@ -187,7 +192,12 @@ class BuildReports {
 
         @Override
         public String getModuleName(Path jobDirectory) {
-            return jobDirectory.relativize(path).getParent().getParent().toString();
+            Path modulePath = jobDirectory.relativize(path).getParent().getParent();
+            if (modulePath == null) {
+                return null;
+            }
+
+            return modulePath.toString();
         }
 
         @Override
@@ -236,7 +246,12 @@ class BuildReports {
 
         @Override
         public String getModuleName(Path jobDirectory) {
-            return jobDirectory.relativize(path).getParent().getParent().getParent().toString();
+            Path modulePath = jobDirectory.relativize(path).getParent().getParent().getParent();
+            if (modulePath == null) {
+                return null;
+            }
+
+            return modulePath.toString();
         }
 
         @Override

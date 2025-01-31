@@ -22,7 +22,7 @@
 {/if}
 
 {#for module in job.modulesWithReportedFailures}
-#### :package: {module.name ? module.name : "Root project"}
+#### :package: {module.name ? module.name : "Root module"}
 
 {#if module.testFailures}
 ```diff
@@ -74,7 +74,7 @@
 ### :gear: {job.name}
 
 {#for module in job.modulesWithFlakyTests}
-#### :package: {module.name ? module.name : "Root project"}
+#### :package: {module.name ? module.name : "Root module"}
 
 {#for flakyTest : module.flakyTests}
 <p>✖ <code>{flakyTest.fullName.escapeHtml}</code>{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={flakyTest.fullClassName}&tests.test={flakyTest.name}">History</a>{/if}</p>

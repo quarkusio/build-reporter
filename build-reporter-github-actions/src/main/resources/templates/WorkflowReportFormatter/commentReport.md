@@ -62,7 +62,7 @@ Full information is available in the [Build summary check run]({checkRun.htmlUrl
 {/if}
 
 {#for module in job.modulesWithReportedFailures}
-#### :package: {module.name ? module.name : "Root project"}
+#### :package: {module.name ? module.name : "Root module"}
 
 {#if module.testFailures}
 {#for failure : module.testFailures}
@@ -117,7 +117,7 @@ It should be safe to merge provided you have a look at the other checks in the s
 ### :gear: {job.name}
 
 {#for module in job.modulesWithFlakyTests}
-#### :package: {module.name ? module.name : "Root project"}
+#### :package: {module.name ? module.name : "Root module"}
 
 {#for flakyTest : module.flakyTests}
 <p>✖ <code>{flakyTest.fullName.escapeHtml}</code>{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={flakyTest.fullClassName}&tests.test={flakyTest.name}">History</a>{/if}</p>

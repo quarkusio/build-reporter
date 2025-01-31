@@ -254,6 +254,10 @@ public class WorkflowRunAnalyzer {
     }
 
     private static String normalizeModuleName(String moduleName) {
+        if (moduleName == null || moduleName.isBlank()) {
+            return WorkflowReportModule.ROOT_MODULE;
+        }
+
         return moduleName.replace('\\', '/');
     }
 

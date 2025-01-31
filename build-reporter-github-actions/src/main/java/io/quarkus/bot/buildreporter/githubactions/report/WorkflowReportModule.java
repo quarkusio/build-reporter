@@ -12,6 +12,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class WorkflowReportModule {
 
+    public static final String ROOT_MODULE = "Root module";
+
     private final String name;
     private final ProjectReport projectReport;
     private final String projectReportFailure;
