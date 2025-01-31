@@ -43,6 +43,7 @@ public class WorkflowReportJob {
                 .filter(pr -> pr.getStatus() == BuildStatus.FAILURE)
                 .map(pr -> pr.getBasedir())
                 .sorted()
+                .map(n -> (n == null || n.isBlank()) ? WorkflowReportModule.ROOT_MODULE : n)
                 .collect(Collectors.toList());
         this.skippedModules = buildReport.getProjectReports().stream()
                 .filter(pr -> pr.getStatus() == BuildStatus.SKIPPED)
