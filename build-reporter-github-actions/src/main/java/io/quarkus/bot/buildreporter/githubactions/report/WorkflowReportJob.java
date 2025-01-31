@@ -42,6 +42,7 @@ public class WorkflowReportJob {
         this.failingModules = buildReport.getProjectReports().stream()
                 .filter(pr -> pr.getStatus() == BuildStatus.FAILURE)
                 .map(pr -> pr.getBasedir())
+                .map(n -> (n == null || n.isBlank()) ? WorkflowReportModule.ROOT_MODULE : n)
                 .sorted()
                 .map(n -> (n == null || n.isBlank()) ? WorkflowReportModule.ROOT_MODULE : n)
                 .collect(Collectors.toList());
