@@ -123,9 +123,9 @@ It should be safe to merge provided you have a look at the other checks in the s
 <p>✖ <code>{flakyTest.fullName.escapeHtml}</code>{#if develocityEnabled && develocityUrl} - <a href="{develocityUrl}scans/tests?tests.container={flakyTest.fullClassName}&tests.test={flakyTest.name}">History</a>{/if}</p>
 
 {#for flake : flakyTest.flakes}
-- `{flake.message.escapeMarkdown}`{#if flake.type} - `{flake.type.escapeMarkdown}`{/if}
+{#if flake.message}- `{flake.message.escapeMarkdown}`{/if}{#if flake.type} - `{flake.type.escapeMarkdown}`{/if}
 
-{#if flake.abbreviatedStackTrace.trim && includeStackTraces}
+{#if flake.abbreviatedStackTrace && flake.abbreviatedStackTrace.trim && includeStackTraces}
 <details>
 
 ```
