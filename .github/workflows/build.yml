@@ -9,6 +9,7 @@ on:
       - 'CODEOWNERS'
       - 'LICENSE'
       - 'README*'
+      - '.github/project.yml'
   pull_request:
     paths-ignore:
       - '.gitignore'

@@ -63,8 +63,10 @@
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <tagNameFormat>@{project.version}</tagNameFormat>
-                    <pushChanges>true</pushChanges>
+
+                    <pushChanges>false</pushChanges>
                     <localCheckout>true</localCheckout>
+                    <remoteTagging>false</remoteTagging>
                 </configuration>
             </plugin>
         </plugins>
@@ -124,7 +126,6 @@
         <url>https://github.com/quarkusio/build-reporter</url>
         <connection>scm:git:git@github.com:quarkusio/build-reporter.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/build-reporter.git</developerConnection>
-        <tag>3.3.0</tag>
     </scm>
 
     <issueManagement>
