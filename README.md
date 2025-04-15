@@ -140,8 +140,10 @@ For these use cases, we also offer a GitHub Action that can be used directly in 
 
 See [Action Build Reporter](https://github.com/quarkusio/action-build-reporter/) for more information.
 
-## Releasing
+## Release
 
-```
-mvn release:prepare release:perform -Darguments=-DperformRelease -Prelease
-```
+To release a new version, follow these steps:
+
+https://github.com/smallrye/smallrye/wiki/Release-Process#releasing
+
+The staging repository is automatically closed. The sync with Maven Central should take ~30 minutes.
