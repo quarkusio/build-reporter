@@ -66,6 +66,7 @@ public class WorkflowRunAnalyzer {
     public Optional<WorkflowReport> getReport(String workflowName,
             GHWorkflowRun workflowRun,
             WorkflowContext workflowContext,
+            Set<String> ignoredFlakyTests,
             List<GHWorkflowJob> jobs,
             Map<String, Optional<BuildReports>> buildReportsMap) throws IOException {
         if (jobs.isEmpty()) {
@@ -108,7 +109,7 @@ public class WorkflowRunAnalyzer {
                     }
 
                     modules = getModules(workflowContext, buildReport, buildReports.getJobDirectory(),
-                            buildReports.getTestResultsPaths(),
+                            buildReports.getTestResultsPaths(), ignoredFlakyTests,
                             sha);
                 } else {
                     errorDownloadingBuildReports = true;
@@ -161,6 +162,7 @@ public class WorkflowRunAnalyzer {
             BuildReport buildReport,
             Path jobDirectory,
             Set<TestResultsPath> testResultsPaths,
+            Set<String> ignoredFlakyTests,
             String sha) {
         List<WorkflowReportModule> modules = new ArrayList<>();
 
@@ -191,6 +193,8 @@ public class WorkflowRunAnalyzer {
 
                     workflowReportFlakyTestCases.addAll(getFlakeDetails(reportTestSuites).stream()
                             .filter(rtc -> !rtc.hasSkipped())
+                            .filter(rtc -> !ignoredFlakyTests.contains(rtc.getFullName())
+                                    && !ignoredFlakyTests.contains(rtc.getFullClassName()))
                             .map(rtc -> new WorkflowReportFlakyTestCase(
                                     WorkflowUtils.getFilePath(moduleName, rtc.getFullClassName()),
                                     rtc,
