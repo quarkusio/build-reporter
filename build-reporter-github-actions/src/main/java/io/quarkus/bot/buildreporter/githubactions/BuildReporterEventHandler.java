@@ -151,6 +151,7 @@ public class BuildReporterEventHandler {
 
                 Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow.getName(), workflowRun,
                         workflowContext,
+                        buildReporterConfig.getIgnoredFlakyTests(),
                         jobs,
                         buildReportsMap);
                 if (workflowReportOptional.isEmpty()) {
@@ -240,6 +241,7 @@ public class BuildReporterEventHandler {
 
                 Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflow.getName(), workflowRun,
                         workflowContext,
+                        buildReporterConfig.getIgnoredFlakyTests(),
                         jobs,
                         buildReportsMap);
                 if (workflowReportOptional.isEmpty()) {

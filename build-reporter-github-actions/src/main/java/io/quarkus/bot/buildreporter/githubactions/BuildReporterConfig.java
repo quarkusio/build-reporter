@@ -1,6 +1,5 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 
@@ -17,11 +16,12 @@ public class BuildReporterConfig {
     private final boolean createCheckRun;
     private final boolean develocityEnabled;
     private final String develocityUrl;
+    private final Set<String> ignoredFlakyTests;
 
     private BuildReporterConfig(boolean dryRun, WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy,
             Comparator<GHWorkflowJob> workflowJobComparator,
             Set<String> monitoredWorkflows, boolean createCheckRun, boolean develocityEnabled,
-            String develocityUrl) {
+            String develocityUrl, Set<String> ignoredFlakyTests) {
         this.dryRun = dryRun;
         this.workflowReportJobIncludeStrategy = workflowReportJobIncludeStrategy;
         this.workflowJobComparator = workflowJobComparator;
@@ -29,6 +29,7 @@ public class BuildReporterConfig {
         this.createCheckRun = createCheckRun;
         this.develocityEnabled = develocityEnabled;
         this.develocityUrl = develocityUrl;
+        this.ignoredFlakyTests = ignoredFlakyTests;
     }
 
     public boolean isDryRun() {
@@ -59,6 +60,10 @@ public class BuildReporterConfig {
         return develocityUrl;
     }
 
+    public Set<String> getIgnoredFlakyTests() {
+        return ignoredFlakyTests;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -69,9 +74,10 @@ public class BuildReporterConfig {
         private boolean createCheckRun = true;
         private WorkflowReportJobIncludeStrategy workflowReportJobIncludeStrategy;
         private Comparator<GHWorkflowJob> workflowJobComparator;
-        private Set<String> monitoredWorkflows = Collections.emptySet();
+        private Set<String> monitoredWorkflows = Set.of();
         private boolean develocityEnabled;
         private String develocityUrl;
+        private Set<String> ignoredFlakyTests = Set.of();
 
         public Builder dryRun(boolean dryRun) {
             this.dryRun = dryRun;
@@ -108,10 +114,15 @@ public class BuildReporterConfig {
             return this;
         }
 
+        public Builder ignoredFlakyTests(Set<String> ignoredFlakyTests) {
+            this.ignoredFlakyTests = ignoredFlakyTests;
+            return this;
+        }
+
         public BuildReporterConfig build() {
             return new BuildReporterConfig(dryRun, workflowReportJobIncludeStrategy,
                     workflowJobComparator != null ? workflowJobComparator : DefaultJobNameComparator.INSTANCE,
-                    monitoredWorkflows, createCheckRun, develocityEnabled, develocityUrl);
+                    monitoredWorkflows, createCheckRun, develocityEnabled, develocityUrl, ignoredFlakyTests);
         }
     }
 

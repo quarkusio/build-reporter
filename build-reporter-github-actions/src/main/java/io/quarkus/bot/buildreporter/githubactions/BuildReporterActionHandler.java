@@ -53,6 +53,7 @@ public class BuildReporterActionHandler {
 
         Optional<WorkflowReport> workflowReportOptional = workflowRunAnalyzer.getReport(workflowName, workflowRun,
                 workflowContext,
+                buildReporterConfig.getIgnoredFlakyTests(),
                 jobs,
                 buildReportsMap);
         if (workflowReportOptional.isEmpty()) {
