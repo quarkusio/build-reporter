@@ -1,5 +1,6 @@
 package io.quarkus.bot.buildreporter.githubactions;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,10 +9,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 class BuildReports {
-
-    private static final Path MAVEN_SUREFIRE_REPORTS_PATH = Path.of("target", "surefire-reports");
-    private static final Path MAVEN_FAILSAFE_REPORTS_PATH = Path.of("target", "failsafe-reports");
-    private static final Path GRADLE_REPORTS_PATH = Path.of("build", "test-results", "test");
 
     private final Path jobDirectory;
     private final Path buildReportPath;
@@ -61,6 +58,11 @@ class BuildReports {
 
     static class Builder {
 
+        private static final String TARGET = "target";
+        private static final String FAILSAFE_REPORTS = "failsafe-reports";
+        private static final String SUREFIRE_REPORTS = "surefire-reports";
+        private static final Path GRADLE_REPORTS_PATH = Path.of("build", "test-results", "test");
+
         private final Path jobDirectory;
         private Path buildReportPath;
         private Path gradleBuildScanUrlPath;
@@ -102,14 +104,23 @@ class BuildReports {
                 return true;
             }
 
-            if (path.endsWith(MAVEN_SUREFIRE_REPORTS_PATH)) {
-                testResultsPaths.add(new SurefireTestResultsPath(path));
-                return true;
+            if (!Files.isDirectory(path) || path.getNameCount() < 2) {
+                return false;
             }
-            if (path.endsWith(MAVEN_FAILSAFE_REPORTS_PATH)) {
-                testResultsPaths.add(new FailsafeTestResultsPath(path));
-                return true;
+
+            if (path.getFileName().toString().startsWith(SUREFIRE_REPORTS)) {
+                if (path.getName(path.getNameCount() - 2).toString().equals(TARGET)) {
+                    testResultsPaths.add(new SurefireTestResultsPath(path));
+                    return true;
+                }
             }
+            if (path.getFileName().toString().startsWith(FAILSAFE_REPORTS)) {
+                if (path.getName(path.getNameCount() - 2).toString().equals(TARGET)) {
+                    testResultsPaths.add(new FailsafeTestResultsPath(path));
+                    return true;
+                }
+            }
+
             if (path.endsWith(GRADLE_REPORTS_PATH)) {
                 testResultsPaths.add(new GradleTestResultsPath(path));
                 return true;
