@@ -98,8 +98,6 @@ class BuildReportsUnarchiver {
                     final Path newPath = getZipEntryPath(jobDirectory, zipEntry);
                     final File newFile = newPath.toFile();
 
-                    buildReportsBuilder.addPath(newPath);
-
                     if (zipEntry.isDirectory()) {
                         if (!newFile.isDirectory() && !newFile.mkdirs()) {
                             throw new IOException("Failed to create directory " + newFile);
@@ -120,6 +118,9 @@ class BuildReportsUnarchiver {
 
                         fos.close();
                     }
+
+                    buildReportsBuilder.addPath(newPath);
+
                     zipEntry = zis.getNextEntry();
                 }
                 zis.closeEntry();

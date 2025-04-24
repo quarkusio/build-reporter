@@ -3,7 +3,8 @@ package io.quarkus.bot.buildreporter.githubactions;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -68,7 +69,7 @@ class BuildReports {
         private Path gradleBuildScanUrlPath;
         private Set<TestResultsPath> testResultsPaths = new TreeSet<>();
 
-        private Set<Path> alreadyTreatedPaths = new HashSet<>();
+        private Map<Path, Boolean> alreadyTreatedPaths = new HashMap<>();
 
         Builder(Path jobDirectory) {
             this.jobDirectory = jobDirectory;
@@ -100,7 +101,11 @@ class BuildReports {
         }
 
         private boolean addTestPath(Path path) {
-            if (path == null || alreadyTreatedPaths.contains(path)) {
+            return alreadyTreatedPaths.computeIfAbsent(path, p -> doAddTestPath(p));
+        }
+
+        private boolean doAddTestPath(Path path) {
+            if (path == null) {
                 return true;
             }
 
