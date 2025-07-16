@@ -17,7 +17,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
 
-        <maven-core.version>3.9.9</maven-core.version>
+        <maven-core.version>3.9.11</maven-core.version>
         <plexus-containers.version>2.2.0</plexus-containers.version>
         <jackson-databind.version>2.18.3</jackson-databind.version>
 
