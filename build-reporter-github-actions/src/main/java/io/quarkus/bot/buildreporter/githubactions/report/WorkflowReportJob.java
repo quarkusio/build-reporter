@@ -81,7 +81,7 @@ public class WorkflowReportJob {
             case SUCCESS:
                 return ":heavy_check_mark:";
             case FAILURE:
-                return "✖";
+                return ":x:";
             case CANCELLED:
                 return ":hourglass:";
             case SKIPPED:
