@@ -97,8 +97,8 @@ public class WorkflowRunAnalyzer {
             if (buildReportsOptional != null) {
                 if (buildReportsOptional.isPresent()) {
                     BuildReports buildReports = buildReportsOptional.get();
-                    if (buildReports.getBuildReportPath() != null) {
-                        buildReport = getBuildReport(workflowContext, buildReports.getBuildReportPath());
+                    if (!buildReports.getBuildReportPaths().isEmpty()) {
+                        buildReport = getBuildReport(workflowContext, buildReports.getBuildReportPaths());
                     }
                     if (buildReports.getGradleBuildScanUrlPath() != null) {
                         try {
@@ -143,18 +143,25 @@ public class WorkflowRunAnalyzer {
         return Optional.of(report);
     }
 
-    private static BuildReport getBuildReport(WorkflowContext workflowContext, Path buildReportPath) {
-        if (buildReportPath == null) {
+    private static BuildReport getBuildReport(WorkflowContext workflowContext, List<Path> buildReportPaths) {
+        if (buildReportPaths.isEmpty()) {
             return new BuildReport();
         }
 
-        try {
-            return OBJECT_MAPPER.readValue(buildReportPath.toFile(), BuildReport.class);
-        } catch (Exception e) {
-            LOG.error(workflowContext.getLogContext() + " - Unable to deserialize "
-                    + WorkflowConstants.BUILD_REPORT_PATH, e);
-            return new BuildReport();
+        BuildReport mergedReport = new BuildReport();
+        for (Path buildReportPath : buildReportPaths) {
+            try {
+                BuildReport buildReport = OBJECT_MAPPER.readValue(buildReportPath.toFile(), BuildReport.class);
+                for (ProjectReport projectReport : buildReport.getProjectReports()) {
+                    mergedReport.addProjectReport(projectReport);
+                }
+            } catch (Exception e) {
+                LOG.error(workflowContext.getLogContext() + " - Unable to deserialize "
+                        + buildReportPath, e);
+            }
         }
+
+        return mergedReport;
     }
 
     private List<WorkflowReportModule> getModules(

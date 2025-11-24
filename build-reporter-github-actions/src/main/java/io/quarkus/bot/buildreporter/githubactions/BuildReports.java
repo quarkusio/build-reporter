@@ -2,8 +2,10 @@ package io.quarkus.bot.buildreporter.githubactions;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -12,14 +14,14 @@ import java.util.TreeSet;
 class BuildReports {
 
     private final Path jobDirectory;
-    private final Path buildReportPath;
+    private final List<Path> buildReportPaths;
     private final Path gradleBuildScanUrlPath;
     private final Set<TestResultsPath> testResultsPaths;
 
-    private BuildReports(Path jobDirectory, Path buildReportPath, Path gradleBuildScanUrlPath,
+    private BuildReports(Path jobDirectory, List<Path> buildReportPaths, Path gradleBuildScanUrlPath,
             Set<TestResultsPath> testResultsPaths) {
         this.jobDirectory = jobDirectory;
-        this.buildReportPath = buildReportPath;
+        this.buildReportPaths = buildReportPaths;
         this.gradleBuildScanUrlPath = gradleBuildScanUrlPath;
         this.testResultsPaths = Collections.unmodifiableSet(testResultsPaths);
     }
@@ -28,8 +30,8 @@ class BuildReports {
         return jobDirectory;
     }
 
-    public Path getBuildReportPath() {
-        return buildReportPath;
+    public List<Path> getBuildReportPaths() {
+        return buildReportPaths;
     }
 
     public Path getGradleBuildScanUrlPath() {
@@ -51,7 +53,7 @@ class BuildReports {
     public String toString() {
         return "BuildReports[\n"
                 + "    jobDirectory=" + jobDirectory + "\n"
-                + "    buildReportPath=" + buildReportPath + "\n"
+                + "    buildReportPaths=" + buildReportPaths + "\n"
                 + "    gradleBuildScanUrlPath=" + gradleBuildScanUrlPath + "\n"
                 + "    testResultsPaths=" + testResultsPaths + "\n"
                 + "]";
@@ -65,11 +67,11 @@ class BuildReports {
         private static final Path GRADLE_REPORTS_PATH = Path.of("build", "test-results", "test");
 
         private final Path jobDirectory;
-        private Path buildReportPath;
+        private final List<Path> buildReportPaths = new ArrayList<>();
         private Path gradleBuildScanUrlPath;
-        private Set<TestResultsPath> testResultsPaths = new TreeSet<>();
+        private final Set<TestResultsPath> testResultsPaths = new TreeSet<>();
 
-        private Map<Path, Boolean> alreadyTreatedPaths = new HashMap<>();
+        private final Map<Path, Boolean> alreadyTreatedPaths = new HashMap<>();
 
         Builder(Path jobDirectory) {
             this.jobDirectory = jobDirectory;
@@ -77,7 +79,7 @@ class BuildReports {
 
         void addPath(Path path) {
             if (path.endsWith(WorkflowConstants.BUILD_REPORT_PATH)) {
-                buildReportPath = path;
+                buildReportPaths.add(path);
                 return;
             }
             if (path.endsWith(WorkflowConstants.GRADLE_BUILD_SCAN_URL_PATH)) {
@@ -135,7 +137,7 @@ class BuildReports {
         }
 
         BuildReports build() {
-            return new BuildReports(jobDirectory, buildReportPath, gradleBuildScanUrlPath, testResultsPaths);
+            return new BuildReports(jobDirectory, buildReportPaths, gradleBuildScanUrlPath, testResultsPaths);
         }
     }
 
