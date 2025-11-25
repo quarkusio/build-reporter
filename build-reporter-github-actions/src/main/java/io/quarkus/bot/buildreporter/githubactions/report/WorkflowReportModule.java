@@ -54,12 +54,7 @@ public class WorkflowReportModule {
     }
 
     public boolean hasFlakyTests() {
-        for (ReportTestSuite reportTestSuite : reportTestSuites) {
-            if (reportTestSuite.getNumberOfFlakes() > 0) {
-                return true;
-            }
-        }
-        return false;
+        return !flakyTests.isEmpty();
     }
 
     public List<WorkflowReportTestCase> getTestFailures() {
